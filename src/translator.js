@@ -1,8 +1,8 @@
-// Translation module — debounce, IPC calls, UI update
+// Translation module — debounce, IPC calls, UI update, clipboard
 import { invoke } from "@tauri-apps/api/core";
 
-let debounceTimer = null;
 const DEBOUNCE_MS = 500;
+const MAX_CHARS = 5000;
 
 /**
  * Debounce utility
@@ -26,9 +26,21 @@ function defaultTarget(sourceLang) {
 }
 
 /**
+ * Copy text to clipboard
+ */
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Create the translator controller
  */
-export function createTranslator() {
+export function createTranslator(settings) {
   const inputArea = document.getElementById("input-area");
   const outputArea = document.getElementById("output-area");
   const sourceSelect = document.getElementById("source-lang");
@@ -36,18 +48,39 @@ export function createTranslator() {
   const swapBtn = document.getElementById("btn-swap");
   const detectedLangEl = document.getElementById("detected-lang");
   const statusText = document.getElementById("status-text");
+  const charCountEl = document.getElementById("char-count");
 
   let isLoading = false;
+
+  /**
+   * Update character count
+   */
+  function updateCharCount() {
+    const len = inputArea.value.length;
+    if (charCountEl) {
+      charCountEl.textContent = `${len}`;
+      charCountEl.classList.toggle("over-limit", len > MAX_CHARS);
+    }
+  }
 
   /**
    * Perform translation
    */
   async function doTranslate() {
     const text = inputArea.value;
+    updateCharCount();
+
     if (!text.trim()) {
       outputArea.innerHTML = '<span class="placeholder">翻译结果</span>';
+      outputArea.title = "";
       detectedLangEl.textContent = "";
       statusText.textContent = "就绪";
+      return;
+    }
+
+    if (text.length > MAX_CHARS) {
+      outputArea.innerHTML = `<span class="error-text">文本超过 ${MAX_CHARS} 字符限制</span>`;
+      statusText.textContent = `超出限制`;
       return;
     }
 
@@ -65,12 +98,22 @@ export function createTranslator() {
       });
 
       outputArea.textContent = result.translated_text;
+      outputArea.title = "点击复制到剪贴板";
       if (result.detected_language) {
+        const langLabel = sourceSelect.options[sourceSelect.selectedIndex]?.text || result.detected_language;
         detectedLangEl.textContent = `检测: ${result.detected_language}`;
       }
-      statusText.textContent = "就绪";
+      const mockText = settings?.mock_mode !== false ? " [MOCK]" : "";
+      statusText.innerHTML = `就绪${mockText}`;
     } catch (err) {
-      outputArea.innerHTML = `<span class="error-text">翻译失败: ${err}</span>`;
+      const msg = String(err);
+      if (msg.includes("Network") || msg.includes("fetch")) {
+        outputArea.innerHTML = '<span class="error-text">网络错误，请检查连接后重试</span>';
+      } else if (msg.includes("403") || msg.includes("401")) {
+        outputArea.innerHTML = '<span class="error-text">API Key 无效，请在设置中配置</span>';
+      } else {
+        outputArea.innerHTML = `<span class="error-text">翻译失败: ${msg}</span>`;
+      }
       statusText.textContent = "错误";
     } finally {
       isLoading = false;
@@ -84,10 +127,7 @@ export function createTranslator() {
    */
   function onSourceChange() {
     const src = sourceSelect.value;
-    if (src === "auto") {
-      // Will be determined after detection
-    } else {
-      // Suggest target based on source
+    if (src !== "auto") {
       const suggested = defaultTarget(src);
       if (targetSelect.value === src || targetSelect.value === "auto") {
         targetSelect.value = suggested;
@@ -110,10 +150,8 @@ export function createTranslator() {
     const srcVal = sourceSelect.value;
     const tgtVal = targetSelect.value;
 
-    // Don't swap if source is "auto"
     if (srcVal === "auto") {
       sourceSelect.value = tgtVal;
-      // Don't change target
       debouncedTranslate();
       return;
     }
@@ -123,12 +161,36 @@ export function createTranslator() {
 
     // Swap text: output becomes input
     const outputText = outputArea.textContent;
-    const isPlaceholder = outputArea.querySelector(".placeholder") || outputText === "翻译结果";
+    const hasPlaceholder = outputArea.querySelector(".placeholder");
+    const isDefault = outputText === "翻译结果";
 
-    if (!isPlaceholder && outputText.trim()) {
+    if (!hasPlaceholder && !isDefault && outputText.trim()) {
       inputArea.value = outputText;
       outputArea.innerHTML = '<span class="placeholder">翻译结果</span>';
+      updateCharCount();
       debouncedTranslate();
+    }
+  }
+
+  /**
+   * Copy output text to clipboard on click
+   */
+  async function onOutputClick() {
+    const text = outputArea.textContent;
+    const hasPlaceholder = outputArea.querySelector(".placeholder");
+    const isError = outputArea.querySelector(".error-text");
+
+    if (hasPlaceholder || isError || !text.trim()) return;
+
+    const ok = await copyToClipboard(text);
+    if (ok) {
+      const orig = statusText.textContent;
+      statusText.textContent = "已复制!";
+      setTimeout(() => {
+        if (statusText.textContent === "已复制!") {
+          statusText.textContent = orig;
+        }
+      }, 1500);
     }
   }
 
@@ -137,6 +199,8 @@ export function createTranslator() {
   sourceSelect.addEventListener("change", onSourceChange);
   targetSelect.addEventListener("change", onTargetChange);
   swapBtn.addEventListener("click", onSwap);
+  outputArea.addEventListener("click", onOutputClick);
+  outputArea.style.cursor = "pointer";
 
   return {
     translate: doTranslate,

@@ -120,8 +120,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       currentSettings.target_lang;
   }
 
-  // 5. Setup translator
-  const translator = createTranslator();
+  // 5. Setup translator with settings
+  const translator = createTranslator(currentSettings);
 
   // 6. Setup settings panel
   createSettings((newSettings) => {
@@ -140,7 +140,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       .getElementById("btn-pin")
       .classList.toggle("active", newSettings.always_on_top);
 
-    // Refresh translation
+    // Update translator's settings reference
+    currentSettings = { ...newSettings };
     translator.refresh();
   });
 

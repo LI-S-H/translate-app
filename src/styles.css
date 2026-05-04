@@ -332,6 +332,16 @@ html, body {
   to { transform: rotate(360deg); }
 }
 
+/* ===== Status Bar Extras ===== */
+#char-count {
+  font-variant-numeric: tabular-nums;
+}
+
+#char-count.over-limit {
+  color: var(--danger);
+  font-weight: 600;
+}
+
 /* ===== Error State ===== */
 .error-text {
   color: var(--danger);
