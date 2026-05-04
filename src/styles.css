@@ -43,7 +43,6 @@ html, body {
   font-size: 14px;
   color: var(--text);
   background: var(--bg);
-  user-select: none;
 }
 
 #app {
@@ -62,6 +61,7 @@ html, body {
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+  user-select: none;
 }
 
 .titlebar-left, .titlebar-right {
@@ -213,6 +213,7 @@ html, body {
   font-size: 11px;
   color: var(--text-secondary);
   flex-shrink: 0;
+  user-select: none;
 }
 
 #detected-lang {

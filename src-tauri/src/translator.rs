@@ -83,14 +83,6 @@ fn from_baidu_lang(code: &str) -> &str {
 
 // ========== Character-set language detection ==========
 
-fn contains_chinese(text: &str) -> bool {
-    text.chars().any(|c| {
-        ('\u{4E00}'..='\u{9FFF}').contains(&c)
-            || ('\u{3400}'..='\u{4DBF}').contains(&c)
-            || ('\u{F900}'..='\u{FAFF}').contains(&c)
-    })
-}
-
 fn contains_japanese(text: &str) -> bool {
     text.chars()
         .any(|c| ('\u{3040}'..='\u{309F}').contains(&c) || ('\u{30A0}'..='\u{30FF}').contains(&c))
@@ -117,10 +109,12 @@ fn detect_language(text: &str) -> (&str, f64) {
         .count();
 
     if cjk_chars > 0 && cjk_chars >= ascii_letters {
-        if contains_japanese(text) && !contains_chinese(text) {
+        // Check Japanese first — Japanese text often contains Kanji (shared with Chinese),
+        // but Hiragana/Katakana confirms it's Japanese
+        if contains_japanese(text) {
             return ("ja", 0.9);
         }
-        if contains_korean(text) && !contains_chinese(text) && !contains_japanese(text) {
+        if contains_korean(text) {
             return ("ko", 0.9);
         }
         return ("zh-Hans", 0.9);

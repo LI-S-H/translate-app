@@ -10,4 +10,7 @@ export default defineConfig({
   build: {
     outDir: "dist",
   },
+  optimizeDeps: {
+    exclude: ["@tauri-apps/api", "@tauri-apps/plugin-store", "@tauri-apps/plugin-global-shortcut"],
+  },
 });

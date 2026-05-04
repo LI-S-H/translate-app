@@ -50,7 +50,9 @@ fn save_settings(
     }
 
     // Persist to store
-    let store = app.store("settings.json").unwrap();
+    let store = app
+        .store("settings.json")
+        .map_err(|e| format!("Store error: {}", e))?;
     let _ = store.set("sourceLang", new_settings.source_lang.clone());
     let _ = store.set("targetLang", new_settings.target_lang.clone());
     let _ = store.set("alwaysOnTop", new_settings.always_on_top);
@@ -123,8 +125,12 @@ pub fn run() {
             let quit_item = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
 
-            let _tray = TrayIconBuilder::new()
-                .icon(app.default_window_icon().unwrap().clone())
+            let icon = app.default_window_icon().cloned();
+            let mut tray_builder = TrayIconBuilder::new();
+            if let Some(icon) = icon {
+                tray_builder = tray_builder.icon(icon);
+            }
+            let _tray = tray_builder
                 .menu(&menu)
                 .tooltip("Translate")
                 .on_tray_icon_event(|tray, event| {
@@ -206,8 +212,8 @@ pub fn run() {
         })
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                // Hide to tray instead of closing
-                window.hide().unwrap();
+                // Hide to tray instead of closing; ignore error if hide fails
+                let _ = window.hide();
                 api.prevent_close();
             }
         })

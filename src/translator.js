@@ -41,6 +41,7 @@ async function copyToClipboard(text) {
  * Create the translator controller
  */
 export function createTranslator(settings) {
+  const appSettings = { current: settings };
   const inputArea = document.getElementById("input-area");
   const outputArea = document.getElementById("output-area");
   const sourceSelect = document.getElementById("source-lang");
@@ -103,7 +104,7 @@ export function createTranslator(settings) {
         const langLabel = sourceSelect.options[sourceSelect.selectedIndex]?.text || result.detected_language;
         detectedLangEl.textContent = `检测: ${result.detected_language}`;
       }
-      const mockText = settings?.mock_mode !== false ? " [MOCK]" : "";
+      const mockText = appSettings.current.mock_mode !== false ? " [MOCK]" : "";
       statusText.innerHTML = `就绪${mockText}`;
     } catch (err) {
       const msg = String(err);
@@ -205,5 +206,6 @@ export function createTranslator(settings) {
   return {
     translate: doTranslate,
     refresh: debouncedTranslate,
+    updateSettings: (s) => { appSettings.current = s; },
   };
 }

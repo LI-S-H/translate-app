@@ -143,6 +143,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Update translator's settings reference
     currentSettings = { ...newSettings };
+    translator.updateSettings(currentSettings);
     translator.refresh();
   });
 
