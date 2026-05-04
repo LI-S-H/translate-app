@@ -33,6 +33,12 @@ export function createSettings(onSettingsChanged) {
   const inputMock = document.getElementById("set-mock");
   const inputBaiduAppId = document.getElementById("set-baidu-appid");
   const inputBaiduKey = document.getElementById("set-baidu-key");
+  const msgEl = document.getElementById("settings-msg");
+
+  function showMsg(text) {
+    msgEl.textContent = text;
+    msgEl.style.display = text ? "block" : "none";
+  }
 
   // Populate language dropdowns
   function populateSelect(select, selectedValue) {
@@ -51,13 +57,20 @@ export function createSettings(onSettingsChanged) {
    * Open settings panel
    */
   async function open() {
+    // Show panel immediately, populate after loading
+    populateSelect(selectSource, "auto");
+    const targetOptions = LANG_OPTIONS.filter((o) => o.value !== "auto");
+    selectTarget.innerHTML = targetOptions
+      .map((opt) => `<option value="${opt.value}">${opt.label}</option>`)
+      .join("");
+    showMsg("");
+    overlay.classList.remove("hidden");
+
     try {
       const settings = await invoke("get_settings");
       cachedSettings = { ...settings };
 
       populateSelect(selectSource, settings.source_lang);
-      // Remove "auto" from target options
-      const targetOptions = LANG_OPTIONS.filter((o) => o.value !== "auto");
       selectTarget.innerHTML = targetOptions
         .map(
           (opt) =>
@@ -72,10 +85,8 @@ export function createSettings(onSettingsChanged) {
       inputMock.checked = settings.mock_mode !== false;
       inputBaiduAppId.value = settings.baidu_app_id || "";
       inputBaiduKey.value = settings.baidu_key || "";
-
-      overlay.classList.remove("hidden");
     } catch (err) {
-      console.error("Failed to load settings:", err);
+      showMsg("加载设置失败: " + String(err));
     }
   }
 
@@ -113,7 +124,7 @@ export function createSettings(onSettingsChanged) {
 
       close();
     } catch (err) {
-      console.error("Failed to save settings:", err);
+      showMsg("保存失败: " + String(err));
     }
   }
 
