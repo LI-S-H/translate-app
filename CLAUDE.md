@@ -14,6 +14,7 @@ Windows 桌面翻译工具，基于 Tauri v2 + 原生 HTML/CSS/JS + 百度翻译
 | 声明"已修复"或任务完成前 | `/verification-before-completion` | 必须实际运行验证，不允许只看编译通过 |
 | 合并分支、推送前 | `/requesting-code-review` | 自查代码一致性、字段匹配、遗漏 |
 | 修改超过 3 个文件或重构完成 | `/simplify` | 检查冗余代码、风格统一、可复用性 |
+| 收到 bug 报告需要修复时 | `/bug-fix` | 理解问题 → 复现 → 修复 → 验证，形成闭环 |
 | 新功能开发前 | `/brainstorming` | 先讨论方案和影响范围，不私自修改 |
 
 **关键原则：**
