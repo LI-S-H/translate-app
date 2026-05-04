@@ -114,6 +114,8 @@ export function createSettings(onSettingsChanged) {
         shortcut: inputShortcut.value || "Ctrl+Shift+T",
         window_width: cachedSettings?.window_width ?? 620,
         window_height: cachedSettings?.window_height ?? 380,
+        window_x: cachedSettings?.window_x ?? -1,
+        window_y: cachedSettings?.window_y ?? -1,
         auto_start: inputAutostart.checked,
         mock_mode: inputMock.checked,
         baidu_app_id: inputBaiduAppId.value,
