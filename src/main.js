@@ -24,8 +24,10 @@ let currentSettings = {
 function applyTheme(theme) {
   document.documentElement.setAttribute("data-theme", theme);
   const btn = document.getElementById("btn-theme");
-  btn.innerHTML = theme === "dark" ? "&#9728;" : "&#127769;"; // sun / moon
-  btn.title = theme === "dark" ? "切换浅色主题" : "切换深色主题";
+  const isDark = theme === "dark";
+  btn.querySelector(".icon-sun").style.display = isDark ? "" : "none";
+  btn.querySelector(".icon-moon").style.display = isDark ? "none" : "";
+  btn.title = isDark ? "切换浅色主题" : "切换深色主题";
 }
 
 function toggleTheme() {
@@ -45,10 +47,10 @@ function toggleTheme() {
 async function setupWindowControls() {
   const win = getCurrentWindow();
 
-  // Drag window by titlebar — use direct IPC, no wrappers
+  // Drag window by titlebar
   document.getElementById("titlebar").addEventListener("mousedown", (e) => {
-    if (e.target.closest("button, select, input")) return;
-    window.__TAURI_INTERNALS__.invoke("plugin:window|start_dragging", { label: "main" });
+    if (e.target.closest("button, select, input, textarea")) return;
+    win.startDragging();
   });
 
   document.getElementById("btn-minimize").addEventListener("click", () => {

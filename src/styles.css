@@ -4,7 +4,7 @@
   --bg-secondary: #f5f5f5;
   --bg-tertiary: #e8e8e8;
   --text: #1a1a1a;
-  --text-secondary: #666666;
+  --text-secondary: #888888;
   --border: #d0d0d0;
   --accent: #2563eb;
   --accent-hover: #1d4ed8;
@@ -16,17 +16,17 @@
 
 [data-theme="dark"] {
   --bg: #1e1e2e;
-  --bg-secondary: #2a2a3c;
+  --bg-secondary: #252538;
   --bg-tertiary: #333350;
   --text: #e0e0e0;
-  --text-secondary: #a0a0b0;
+  --text-secondary: #8888a0;
   --border: #404060;
   --accent: #60a5fa;
   --accent-hover: #93bbfc;
   --danger: #f87171;
   --danger-hover: #fca5a5;
   --shadow: 0 2px 8px rgba(0,0,0,0.3);
-  --panel-bg: #252538;
+  --panel-bg: #222234;
 }
 
 /* ===== Reset & Base ===== */
@@ -39,16 +39,15 @@ html, body {
   font-size: 14px;
   color: var(--text);
   background: var(--bg);
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 #app {
   display: flex;
   flex-direction: column;
   height: 100%;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
-  border: 1px solid var(--border);
 }
 
 /* ===== Titlebar ===== */
@@ -56,25 +55,25 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 36px;
-  padding: 0 10px;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
+  height: 34px;
+  padding: 0 8px;
+  background: var(--bg);
   flex-shrink: 0;
   user-select: none;
 }
 
-.titlebar-left { display: flex; align-items: center; gap: 2px; }
-.titlebar-actions { display: flex; align-items: center; gap: 4px; }
+.titlebar-left { display: flex; align-items: center; gap: 1px; }
+.titlebar-actions { display: flex; align-items: center; gap: 2px; }
 
 .app-name {
   font-weight: 600;
-  font-size: 13px;
-  margin-right: 10px;
+  font-size: 12px;
+  margin-right: 8px;
   color: var(--text-secondary);
+  letter-spacing: 0.3px;
 }
 
-/* Base icon button */
+/* Base icon button — unified for titlebar */
 .icon-btn {
   width: 28px;
   height: 28px;
@@ -83,33 +82,28 @@ html, body {
   color: var(--text-secondary);
   cursor: pointer;
   border-radius: 4px;
-  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.15s, color 0.15s;
-  opacity: 0.55;
+  flex-shrink: 0;
 }
 
-.icon-btn:hover { opacity: 1; background: var(--bg-tertiary); color: var(--text); }
+.icon-btn svg { width: 14px; height: 14px; }
 
-/* Active/pinned state — subtle highlight */
-.icon-btn.active { opacity: 1; color: var(--accent); }
+.icon-btn:hover { background: var(--bg-tertiary); color: var(--text); }
+
+/* Active/pinned state */
+.icon-btn.active { color: var(--accent); }
 
 /* Close button */
-.btn-close {
-  font-size: 14px;
-  width: 28px;
-  height: 28px;
-}
-
-.btn-close:hover { background: var(--danger) !important; color: white; opacity: 1; }
+.btn-close:hover { background: var(--danger) !important; color: white !important; }
 
 /* ===== Main Content ===== */
 #main-content {
   display: flex;
   flex: 1;
-  padding: 12px 14px;
+  padding: 8px 14px 10px;
   gap: 10px;
   overflow: hidden;
 }
@@ -126,10 +120,10 @@ html, body {
 .lang-select {
   padding: 3px 8px;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 5px;
   background: var(--bg);
   color: var(--text);
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
   outline: none;
 }
@@ -143,9 +137,9 @@ html, body {
   flex: 1;
   resize: none;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px 28px 10px 12px;
-  font-size: 15px;
+  border-radius: 8px;
+  padding: 10px 30px 10px 12px;
+  font-size: 14px;
   font-family: inherit;
   color: var(--text);
   background: var(--panel-bg);
@@ -169,7 +163,6 @@ html, body {
   color: var(--text-secondary);
   cursor: pointer;
   border-radius: 50%;
-  font-size: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -194,11 +187,9 @@ html, body {
   height: 30px;
   border: 1px solid var(--border);
   border-radius: 50%;
-  font-size: 15px;
-  opacity: 0.55;
 }
 
-.swap-btn:hover { opacity: 1; }
+.swap-btn:hover { background: var(--bg-tertiary); }
 
 /* ===== Output Area ===== */
 .output-wrap { flex: 1; position: relative; display: flex; }
@@ -206,19 +197,23 @@ html, body {
 .output-area {
   flex: 1;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px 10px 32px 12px;
+  border-radius: 8px;
+  padding: 10px 12px 30px 12px;
   background: var(--panel-bg);
   overflow-y: auto;
   line-height: 1.6;
-  font-size: 15px;
+  font-size: 14px;
   white-space: pre-wrap;
   word-break: break-word;
+  text-align: left;
+  cursor: default;
 }
 
-.output-area .placeholder { color: var(--text-secondary); }
+.output-area .placeholder {
+  color: var(--text-secondary);
+}
 
-/* Copy button — bottom-left of output, always visible when shown */
+/* Copy button — bottom-left of output */
 .copy-btn {
   position: absolute;
   left: 6px;
@@ -229,18 +224,17 @@ html, body {
   background: var(--bg);
   color: var(--text-secondary);
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.6;
-  transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+  opacity: 0.55;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s, color 0.15s;
   z-index: 2;
-  padding: 3px;
 }
 
 .copy-btn svg { width: 14px; height: 14px; }
-.copy-btn:hover { opacity: 1; border-color: var(--accent); background: var(--bg-secondary); }
+.copy-btn:hover { opacity: 1; border-color: var(--accent); }
 .copy-btn.hidden { display: none; }
 
 /* Flash when copied */
@@ -256,10 +250,9 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 24px;
+  height: 22px;
   padding: 0 12px;
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border);
+  background: var(--bg);
   font-size: 11px;
   color: var(--text-secondary);
   flex-shrink: 0;
@@ -284,7 +277,7 @@ html, body {
 #settings-panel {
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 20px;
   width: 360px;
   box-shadow: var(--shadow);
@@ -306,7 +299,7 @@ html, body {
 .setting-item input[type="password"] {
   padding: 4px 8px;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 5px;
   background: var(--bg);
   color: var(--text);
   font-size: 13px;
@@ -322,7 +315,7 @@ html, body {
 .settings-buttons button {
   padding: 6px 16px;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 5px;
   background: var(--bg);
   color: var(--text);
   cursor: pointer;
