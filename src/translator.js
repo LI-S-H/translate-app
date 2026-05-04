@@ -61,8 +61,6 @@ export function createTranslator(settings) {
 
     if (!text.trim()) {
       outputArea.innerHTML = '<span class="placeholder">翻译结果</span>';
-      outputArea.style.cursor = "default";
-      outputArea.title = "";
       detectedLangEl.textContent = "";
       statusText.textContent = "就绪";
       updateCopyBtn();
@@ -75,7 +73,6 @@ export function createTranslator(settings) {
       return;
     }
 
-    // Skip if already loading — debounce will retrigger after current finishes
     if (isLoading) {
       pendingTranslation = { text: inputArea.value, from: sourceSelect.value, to: targetSelect.value };
       return;
@@ -90,8 +87,6 @@ export function createTranslator(settings) {
     try {
       const result = await invoke("translate_text", { text, from, to });
       outputArea.textContent = result.translated_text;
-      outputArea.style.cursor = "pointer";
-      outputArea.title = "点击复制到剪贴板";
       if (result.detected_language) {
         detectedLangEl.textContent = `检测: ${result.detected_language}`;
       }
@@ -157,29 +152,25 @@ export function createTranslator(settings) {
     if (!hasPlaceholder && !hasError && !isDefault && outputText.trim()) {
       inputArea.value = outputText;
       outputArea.innerHTML = '<span class="placeholder">翻译结果</span>';
-      outputArea.style.cursor = "default";
       detectedLangEl.textContent = "";
       updateCharCount();
     }
     debouncedTranslate();
   }
 
-  async function onOutputClick() {
+  async function onCopyClick() {
     const text = outputArea.textContent;
     const hasPlaceholder = outputArea.querySelector(".placeholder");
     const hasError = outputArea.querySelector(".error-text");
-
     if (hasPlaceholder || hasError || !text.trim()) return;
 
     const ok = await copyToClipboard(text);
     if (ok) {
-      outputArea.classList.add("copied-flash");
-      statusText.textContent = "已复制!";
+      copyBtn.classList.add("flash");
+      statusText.textContent = "已复制";
       setTimeout(() => {
-        outputArea.classList.remove("copied-flash");
-        if (statusText.textContent === "已复制!") {
-          statusText.textContent = "就绪";
-        }
+        copyBtn.classList.remove("flash");
+        if (statusText.textContent === "已复制") statusText.textContent = "就绪";
       }, 1200);
     }
   }
@@ -189,21 +180,17 @@ export function createTranslator(settings) {
   sourceSelect.addEventListener("change", onSourceChange);
   targetSelect.addEventListener("change", onTargetChange);
   swapBtn.addEventListener("click", onSwap);
-  outputArea.addEventListener("click", onOutputClick);
 
-  // Clear button
   clearBtn.addEventListener("click", () => {
     inputArea.value = "";
     outputArea.innerHTML = '<span class="placeholder">翻译结果</span>';
-    outputArea.style.cursor = "default";
     detectedLangEl.textContent = "";
     statusText.textContent = "就绪";
     updateCharCount();
     updateCopyBtn();
   });
 
-  // Copy button (bottom-left of output)
-  copyBtn.addEventListener("click", onOutputClick);
+  copyBtn.addEventListener("click", onCopyClick);
 
   return {
     translate: doTranslate,

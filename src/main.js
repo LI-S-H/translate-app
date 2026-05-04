@@ -45,14 +45,10 @@ function toggleTheme() {
 async function setupWindowControls() {
   const win = getCurrentWindow();
 
-  // Drag window by titlebar
+  // Drag window by titlebar — use direct IPC, no wrappers
   document.getElementById("titlebar").addEventListener("mousedown", (e) => {
-    // Only drag when clicking titlebar itself or app-name, not buttons
-    const tag = e.target.tagName;
-    if (tag !== "BUTTON" && tag !== "SELECT" && tag !== "INPUT") {
-      e.preventDefault();
-      win.startDragging();
-    }
+    if (e.target.closest("button, select, input")) return;
+    window.__TAURI_INTERNALS__.invoke("plugin:window|start_dragging", { label: "main" });
   });
 
   document.getElementById("btn-minimize").addEventListener("click", () => {
