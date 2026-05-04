@@ -45,6 +45,16 @@ function toggleTheme() {
 async function setupWindowControls() {
   const win = getCurrentWindow();
 
+  // Drag window by titlebar
+  document.getElementById("titlebar").addEventListener("mousedown", (e) => {
+    // Only drag when clicking titlebar itself or app-name, not buttons
+    const tag = e.target.tagName;
+    if (tag !== "BUTTON" && tag !== "SELECT" && tag !== "INPUT") {
+      e.preventDefault();
+      win.startDragging();
+    }
+  });
+
   document.getElementById("btn-minimize").addEventListener("click", () => {
     win.minimize();
   });
@@ -58,13 +68,9 @@ async function setupWindowControls() {
     currentSettings.always_on_top = !currentSettings.always_on_top;
     await win.setAlwaysOnTop(currentSettings.always_on_top);
     pinBtn.classList.toggle("active", currentSettings.always_on_top);
-    // Persist
-    invoke("save_settings", { newSettings: currentSettings }).catch((err) =>
-      console.error("Failed to save pin:", err)
-    );
+    invoke("save_settings", { newSettings: currentSettings }).catch(() => {});
   });
 
-  // Save window size and position on resize/move
   let saveTimer;
   async function saveWindowGeometry() {
     try {
@@ -78,15 +84,8 @@ async function setupWindowControls() {
     } catch (_) {}
   }
 
-  win.onResized(() => {
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(saveWindowGeometry, 1000);
-  });
-
-  win.onMoved(() => {
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(saveWindowGeometry, 1000);
-  });
+  win.onResized(() => { clearTimeout(saveTimer); saveTimer = setTimeout(saveWindowGeometry, 1000); });
+  win.onMoved(() => { clearTimeout(saveTimer); saveTimer = setTimeout(saveWindowGeometry, 1000); });
 }
 
 // ===== Init =====

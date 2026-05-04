@@ -26,6 +26,7 @@ export function getCurrentWindow() {
     outerSize:      () => w("outer_size"),
     outerPosition:  () => w("outer_position"),
     setAlwaysOnTop: (v) => w("set_always_on_top", { value: v }),
+    startDragging:  () => w("start_dragging"),
     setPosition:    (pos) => w("set_position", { value: { x: pos.x, y: pos.y, type: "Logical" } }),
     onResized:  (cb) => { window.addEventListener("resize", cb); },
     onMoved:    (cb) => {
