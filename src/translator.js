@@ -1,5 +1,5 @@
 // Translation module — debounce, IPC calls, UI update, clipboard
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "./tauri-bridge.js";
 
 const DEBOUNCE_MS = 500;
 const MAX_CHARS = 5000;

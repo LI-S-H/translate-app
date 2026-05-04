@@ -25,7 +25,7 @@ async fn translate_text(
     state: State<'_, AppState>,
 ) -> Result<TranslationResult, String> {
     let (mock_mode, baidu_app_id, baidu_key) = {
-        let settings = state.settings.lock().unwrap();
+        let settings = state.settings.lock().map_err(|e| format!("锁定设置失败: {}", e))?;
         (settings.mock_mode, settings.baidu_app_id.clone(), settings.baidu_key.clone())
     };
     translate(text, from, to, mock_mode, baidu_app_id, baidu_key).await
@@ -33,7 +33,7 @@ async fn translate_text(
 
 #[tauri::command]
 fn get_settings(state: State<'_, AppState>) -> Result<Settings, String> {
-    let settings = state.settings.lock().unwrap();
+    let settings = state.settings.lock().map_err(|e| format!("锁定设置失败: {}", e))?;
     Ok(settings.clone())
 }
 
@@ -45,7 +45,7 @@ fn save_settings(
 ) -> Result<(), String> {
     // Update in-memory state
     {
-        let mut settings = state.settings.lock().unwrap();
+        let mut settings = state.settings.lock().map_err(|e| format!("锁定设置失败: {}", e))?;
         *settings = new_settings.clone();
     }
 
@@ -174,7 +174,7 @@ pub fn run() {
             // Load persisted settings into memory
             let store = app.store("settings.json")?;
             let state = app.state::<AppState>();
-            let mut settings = state.settings.lock().unwrap();
+            let mut settings = state.settings.lock().map_err(|e| format!("启动加载设置失败: {}", e))?;
 
             if let Some(val) = store.get("sourceLang") {
                 settings.source_lang = val.as_str().unwrap_or("auto").to_string();

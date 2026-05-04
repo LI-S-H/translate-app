@@ -1,5 +1,5 @@
 // Settings panel module
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "./tauri-bridge.js";
 
 const LANG_OPTIONS = [
   { value: "auto", label: "自动检测" },

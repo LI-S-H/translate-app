@@ -1,6 +1,5 @@
 // Translate App — Main Entry
-import { invoke } from "@tauri-apps/api/core";
-import { getCurrentWindow, LogicalPosition } from "@tauri-apps/api/window";
+import { invoke, getCurrentWindow, LogicalPosition } from "./tauri-bridge.js";
 import { createTranslator } from "./translator.js";
 import { createSettings } from "./settings.js";
 
