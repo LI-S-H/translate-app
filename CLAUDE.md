@@ -38,10 +38,19 @@ translate-app/
 │   ├── tauri.conf.json     # Window config, app metadata
 │   ├── capabilities/default.json  # Security permissions
 │   └── src/
-│       ├── main.rs         # Desktop entry point
-│       └── lib.rs          # Tauri commands, plugins, tray, setup
+│       ├── main.rs         # Desktop entry point (generated)
+│       ├── lib.rs          # Tauri commands, plugins, tray, setup, state
+│       ├── translator.rs   # Translation engine (mock + MS API), language detect
+│       └── autostart.rs    # Windows registry auto-start management
 └── dist/                   # Vite build output (for Tauri bundler)
 ```
+
+## Frontend Modules
+
+- **main.js** — App entry point. Loads settings, applies theme, initializes translator and settings modules, wires window controls (minimize/maximize/close/pin/theme).
+- **translator.js** — Translation controller. Creates debounced input handler (500ms), calls `translate_text` Tauri command, updates output area, handles language selector changes and swap button.
+- **settings.js** — Settings panel controller. Opens modal, populates fields from current settings, saves via `save_settings` command, notifies callback on change.
+- **styles.css** — Complete light/dark theme via CSS custom properties. `[data-theme="dark"]` selector switches theme. Left-right flexbox layout.
 
 ## Feature Requirements
 
