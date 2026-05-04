@@ -45,6 +45,10 @@ function toggleTheme() {
 async function setupWindowControls() {
   const win = getCurrentWindow();
 
+  document.getElementById("btn-minimize").addEventListener("click", () => {
+    win.minimize();
+  });
+
   document.getElementById("btn-close").addEventListener("click", () => {
     win.close();
   });

@@ -58,7 +58,6 @@ html, body {
 /* ===== Titlebar ===== */
 #titlebar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   height: 36px;
   padding: 0 8px;
@@ -66,12 +65,29 @@ html, body {
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   user-select: none;
+  cursor: grab;
 }
 
-.titlebar-left, .titlebar-right {
+#titlebar:active {
+  cursor: grabbing;
+}
+
+.titlebar-spacer {
+  flex: 1;
+  height: 100%;
+}
+
+.titlebar-left {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.titlebar-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 8px;
 }
 
 .app-name {
@@ -165,11 +181,11 @@ html, body {
 #input-area:focus { border-color: var(--accent); }
 #input-area::placeholder { color: var(--text-secondary); }
 
-/* Clear button inside input */
+/* Clear button inside input — top-right */
 .clear-btn {
   position: absolute;
-  right: 0;
-  bottom: 0;
+  right: 4px;
+  top: 4px;
   width: 26px;
   height: 26px;
   border: none;

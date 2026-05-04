@@ -38,7 +38,6 @@ export function createSettings(onSettingsChanged) {
   const inputMock = document.getElementById("set-mock");
   const inputBaiduAppId = document.getElementById("set-baidu-appid");
   const inputBaiduKey = document.getElementById("set-baidu-key");
-  const btnToggleKey = document.getElementById("btn-toggle-key");
   const msgEl = document.getElementById("settings-msg");
 
   function showMsg(text) {
@@ -64,9 +63,6 @@ export function createSettings(onSettingsChanged) {
     selectTarget.innerHTML = targetOptions
       .map((opt) => `<option value="${opt.value}">${opt.label}</option>`)
       .join("");
-    // Reset key visibility
-    inputBaiduKey.type = "password";
-    btnToggleKey.innerHTML = "&#128065;";
     overlay.classList.remove("hidden");
 
     try {
@@ -133,17 +129,6 @@ export function createSettings(onSettingsChanged) {
       showMsg("保存失败: " + String(err));
     }
   }
-
-  // Toggle key visibility
-  btnToggleKey.addEventListener("click", () => {
-    if (inputBaiduKey.type === "password") {
-      inputBaiduKey.type = "text";
-      btnToggleKey.innerHTML = "&#128064;"; // eye-slash
-    } else {
-      inputBaiduKey.type = "password";
-      btnToggleKey.innerHTML = "&#128065;"; // eye
-    }
-  });
 
   btnSettings.addEventListener("click", open);
   btnSave.addEventListener("click", save);
