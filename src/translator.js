@@ -32,6 +32,8 @@ export function createTranslator(settings) {
   const detectedLangEl = document.getElementById("detected-lang");
   const statusText = document.getElementById("status-text");
   const charCountEl = document.getElementById("char-count");
+  const clearBtn = document.getElementById("btn-clear");
+  const copyBtn = document.getElementById("btn-copy");
 
   let isLoading = false;
   let pendingTranslation = null;
@@ -42,6 +44,15 @@ export function createTranslator(settings) {
       charCountEl.textContent = String(len);
       charCountEl.classList.toggle("over-limit", len > MAX_CHARS);
     }
+    // Show/hide clear button
+    if (clearBtn) clearBtn.classList.toggle("hidden", len === 0);
+  }
+
+  function updateCopyBtn() {
+    const text = outputArea.textContent || "";
+    const hasPlaceholder = outputArea.querySelector(".placeholder");
+    const hasError = outputArea.querySelector(".error-text");
+    if (copyBtn) copyBtn.classList.toggle("hidden", hasPlaceholder || hasError || !text.trim());
   }
 
   async function doTranslate() {
@@ -54,6 +65,7 @@ export function createTranslator(settings) {
       outputArea.title = "";
       detectedLangEl.textContent = "";
       statusText.textContent = "就绪";
+      updateCopyBtn();
       return;
     }
 
@@ -85,6 +97,7 @@ export function createTranslator(settings) {
       }
       const mockText = appSettings.current.mock_mode ? " [模拟]" : "";
       statusText.textContent = `就绪${mockText}`;
+      updateCopyBtn();
     } catch (err) {
       const msg = String(err);
       if (msg.includes("Network") || msg.includes("fetch")) {
@@ -177,6 +190,20 @@ export function createTranslator(settings) {
   targetSelect.addEventListener("change", onTargetChange);
   swapBtn.addEventListener("click", onSwap);
   outputArea.addEventListener("click", onOutputClick);
+
+  // Clear button
+  clearBtn.addEventListener("click", () => {
+    inputArea.value = "";
+    outputArea.innerHTML = '<span class="placeholder">翻译结果</span>';
+    outputArea.style.cursor = "default";
+    detectedLangEl.textContent = "";
+    statusText.textContent = "就绪";
+    updateCharCount();
+    updateCopyBtn();
+  });
+
+  // Copy button (bottom-left of output)
+  copyBtn.addEventListener("click", onOutputClick);
 
   return {
     translate: doTranslate,

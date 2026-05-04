@@ -21,7 +21,7 @@
         "center": true,
         "alwaysOnTop": true,
         "resizable": true,
-        "decorations": true,
+        "decorations": false,
         "maximizable": true,
         "minimizable": true,
         "closable": true,

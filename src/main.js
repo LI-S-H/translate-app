@@ -45,24 +45,10 @@ function toggleTheme() {
 async function setupWindowControls() {
   const win = getCurrentWindow();
 
-  document.getElementById("btn-minimize").addEventListener("click", () => {
-    win.minimize();
-  });
-
-  document.getElementById("btn-maximize").addEventListener("click", async () => {
-    const maximized = await win.isMaximized();
-    if (maximized) {
-      win.unmaximize();
-    } else {
-      win.maximize();
-    }
-  });
-
   document.getElementById("btn-close").addEventListener("click", () => {
-    win.close(); // Backend intercepts CloseRequested → hides to tray
+    win.close();
   });
 
-  // Always-on-top toggle (pin button)
   const pinBtn = document.getElementById("btn-pin");
   pinBtn.addEventListener("click", async () => {
     currentSettings.always_on_top = !currentSettings.always_on_top;

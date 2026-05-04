@@ -43,12 +43,16 @@ html, body {
   font-size: 14px;
   color: var(--text);
   background: var(--bg);
+  border-radius: 8px;
 }
 
 #app {
   display: flex;
   flex-direction: column;
   height: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
 }
 
 /* ===== Titlebar ===== */
@@ -92,13 +96,8 @@ html, body {
   transition: background 0.15s;
 }
 
-.icon-btn:hover {
-  background: var(--bg-tertiary);
-}
-
-.icon-btn.active {
-  color: var(--accent);
-}
+.icon-btn:hover { background: var(--bg-tertiary); }
+.icon-btn.active { color: var(--accent); }
 
 .btn-close:hover {
   background: var(--danger) !important;
@@ -139,17 +138,21 @@ html, body {
   outline: none;
 }
 
-.lang-select:focus {
-  border-color: var(--accent);
-}
+.lang-select:focus { border-color: var(--accent); }
 
 /* ===== Input Area ===== */
+.input-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+}
+
 #input-area {
   flex: 1;
   resize: none;
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 10px;
+  padding: 10px 28px 10px 10px;
   font-size: 15px;
   font-family: inherit;
   color: var(--text);
@@ -159,13 +162,32 @@ html, body {
   transition: border-color 0.15s;
 }
 
-#input-area:focus {
-  border-color: var(--accent);
+#input-area:focus { border-color: var(--accent); }
+#input-area::placeholder { color: var(--text-secondary); }
+
+/* Clear button inside input */
+.clear-btn {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 50%;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+  transition: opacity 0.15s, background 0.15s;
+  z-index: 2;
 }
 
-#input-area::placeholder {
-  color: var(--text-secondary);
-}
+.clear-btn:hover { opacity: 1; background: var(--bg-tertiary); }
+.clear-btn.hidden { display: none; }
 
 /* ===== Swap Button ===== */
 .swap-col {
@@ -184,11 +206,17 @@ html, body {
 }
 
 /* ===== Output Area ===== */
+.output-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+}
+
 .output-area {
   flex: 1;
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 10px;
+  padding: 10px 28px 10px 10px;
   background: var(--panel-bg);
   overflow-y: auto;
   line-height: 1.6;
@@ -197,13 +225,31 @@ html, body {
   word-break: break-word;
 }
 
-.output-area .placeholder {
+.output-area .placeholder { color: var(--text-secondary); }
+
+/* Copy button inside output */
+.copy-btn {
+  position: absolute;
+  left: 6px;
+  bottom: 4px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
   color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.4;
+  transition: opacity 0.15s, background 0.15s;
+  z-index: 2;
 }
 
-.output-area:not(:has(.placeholder)):not(:has(.error-text)) {
-  cursor: pointer;
-}
+.copy-btn:hover { opacity: 1; background: var(--bg-tertiary); }
+.copy-btn.hidden { display: none; }
 
 .copied-flash {
   animation: copy-pulse 0.4s ease;
@@ -230,9 +276,7 @@ html, body {
   user-select: none;
 }
 
-#detected-lang {
-  font-weight: 500;
-}
+#detected-lang { font-weight: 500; }
 
 /* ===== Settings Modal ===== */
 #settings-overlay {
@@ -245,9 +289,7 @@ html, body {
   z-index: 100;
 }
 
-#settings-overlay.hidden {
-  display: none;
-}
+#settings-overlay.hidden { display: none; }
 
 #settings-panel {
   background: var(--bg);
@@ -258,10 +300,7 @@ html, body {
   box-shadow: var(--shadow);
 }
 
-#settings-panel h3 {
-  margin-bottom: 16px;
-  font-size: 16px;
-}
+#settings-panel h3 { margin-bottom: 16px; font-size: 16px; }
 
 .setting-item {
   display: flex;
@@ -270,10 +309,7 @@ html, body {
   margin-bottom: 12px;
 }
 
-.setting-item label {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
+.setting-item label { font-size: 13px; color: var(--text-secondary); }
 
 .setting-item select,
 .setting-item input[type="text"],
@@ -288,16 +324,8 @@ html, body {
   outline: none;
 }
 
-.setting-item input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-}
-
-.setting-item input:focus,
-.setting-item select:focus {
-  border-color: var(--accent);
-}
+.setting-item input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+.setting-item input:focus, .setting-item select:focus { border-color: var(--accent); }
 
 .settings-buttons {
   display: flex;
@@ -314,12 +342,9 @@ html, body {
   color: var(--text);
   cursor: pointer;
   font-size: 13px;
-  transition: background 0.15s;
 }
 
-.settings-buttons button:hover {
-  background: var(--bg-tertiary);
-}
+.settings-buttons button:hover { background: var(--bg-tertiary); }
 
 #btn-save-settings {
   background: var(--accent);
@@ -327,9 +352,7 @@ html, body {
   border-color: var(--accent);
 }
 
-#btn-save-settings:hover {
-  background: var(--accent-hover);
-}
+#btn-save-settings:hover { background: var(--accent-hover); }
 
 /* ===== Loading Spinner ===== */
 .spinner {
@@ -343,21 +366,11 @@ html, body {
   margin-right: 6px;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ===== Status Bar Extras ===== */
-#char-count {
-  font-variant-numeric: tabular-nums;
-}
+#char-count { font-variant-numeric: tabular-nums; }
+#char-count.over-limit { color: var(--danger); font-weight: 600; }
 
-#char-count.over-limit {
-  color: var(--danger);
-  font-weight: 600;
-}
-
-/* ===== Error State ===== */
-.error-text {
-  color: var(--danger);
-}
+/* ===== Error ===== */
+.error-text { color: var(--danger); }

@@ -8,7 +8,7 @@
 </head>
 <body>
   <div id="app">
-    <!-- titlebar -->
+    <!-- titlebar — drag region -->
     <div id="titlebar" data-tauri-drag-region>
       <div class="titlebar-left">
         <span class="app-name">Translate</span>
@@ -17,8 +17,6 @@
         <button id="btn-settings" class="icon-btn" title="设置">&#9881;</button>
       </div>
       <div class="titlebar-right">
-        <button id="btn-minimize" class="icon-btn" title="最小化">&#947;</button>
-        <button id="btn-maximize" class="icon-btn" title="最大化">&#9633;</button>
         <button id="btn-close" class="icon-btn btn-close" title="关闭">&#10005;</button>
       </div>
     </div>
@@ -34,18 +32,21 @@
             <option value="en">English</option>
             <option value="ja">日本語</option>
             <option value="ko">한국어</option>
-            <option value="fr">Français</option>
+            <option value="fr">Francais</option>
             <option value="de">Deutsch</option>
-            <option value="es">Español</option>
+            <option value="es">Espanol</option>
             <option value="ru">Русский</option>
-            <option value="pt">Português</option>
+            <option value="pt">Portugues</option>
             <option value="it">Italiano</option>
             <option value="ar">العربية</option>
             <option value="th">ไทย</option>
             <option value="vi">Tiếng Việt</option>
           </select>
         </div>
-        <textarea id="input-area" placeholder="输入要翻译的内容..." autofocus></textarea>
+        <div class="input-wrap">
+          <textarea id="input-area" placeholder="输入要翻译的内容..." autofocus></textarea>
+          <button id="btn-clear" class="clear-btn hidden" title="清除">&#10005;</button>
+        </div>
       </div>
 
       <!-- swap button -->
@@ -61,19 +62,22 @@
             <option value="zh-Hans">中文</option>
             <option value="ja">日本語</option>
             <option value="ko">한국어</option>
-            <option value="fr">Français</option>
+            <option value="fr">Francais</option>
             <option value="de">Deutsch</option>
-            <option value="es">Español</option>
+            <option value="es">Espanol</option>
             <option value="ru">Русский</option>
-            <option value="pt">Português</option>
+            <option value="pt">Portugues</option>
             <option value="it">Italiano</option>
             <option value="ar">العربية</option>
             <option value="th">ไทย</option>
             <option value="vi">Tiếng Việt</option>
           </select>
         </div>
-        <div id="output-area" class="output-area">
-          <span class="placeholder">翻译结果</span>
+        <div class="output-wrap">
+          <div id="output-area" class="output-area" title="点击复制到剪贴板">
+            <span class="placeholder">翻译结果</span>
+          </div>
+          <button id="btn-copy" class="copy-btn hidden" title="复制">&#128203;</button>
         </div>
       </div>
     </div>
