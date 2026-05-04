@@ -22,6 +22,9 @@ Thumbs.db
 .env
 .env.local
 
+# Claude
+.claude/settings*.json
+
 # Build artifacts
 *.msi
 *.exe.manifest
