@@ -201,6 +201,20 @@ html, body {
   color: var(--text-secondary);
 }
 
+.output-area:not(:has(.placeholder)):not(:has(.error-text)) {
+  cursor: pointer;
+}
+
+.copied-flash {
+  animation: copy-pulse 0.4s ease;
+}
+
+@keyframes copy-pulse {
+  0% { background: var(--panel-bg); }
+  50% { background: var(--accent); color: white; }
+  100% { background: var(--panel-bg); }
+}
+
 /* ===== Status Bar ===== */
 #statusbar {
   display: flex;

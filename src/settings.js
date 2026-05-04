@@ -18,9 +18,14 @@ const LANG_OPTIONS = [
   { value: "vi", label: "Tiếng Việt" },
 ];
 
-/**
- * Create settings panel controller
- */
+// Simple shortcut validation: must contain a modifier + key
+const SHORTCUT_RE = /^(Ctrl|Alt|Shift|Super)(\+(Ctrl|Alt|Shift|Super))*\+[A-Z0-9]$/i;
+
+function validateShortcut(val) {
+  if (!val) return true; // will use default
+  return SHORTCUT_RE.test(val);
+}
+
 export function createSettings(onSettingsChanged) {
   const overlay = document.getElementById("settings-overlay");
   const btnSettings = document.getElementById("btn-settings");
@@ -33,6 +38,7 @@ export function createSettings(onSettingsChanged) {
   const inputMock = document.getElementById("set-mock");
   const inputBaiduAppId = document.getElementById("set-baidu-appid");
   const inputBaiduKey = document.getElementById("set-baidu-key");
+  const btnToggleKey = document.getElementById("btn-toggle-key");
   const msgEl = document.getElementById("settings-msg");
 
   function showMsg(text) {
@@ -40,7 +46,6 @@ export function createSettings(onSettingsChanged) {
     msgEl.style.display = text ? "block" : "none";
   }
 
-  // Populate language dropdowns
   function populateSelect(select, selectedValue) {
     select.innerHTML = LANG_OPTIONS.map(
       (opt) =>
@@ -50,20 +55,18 @@ export function createSettings(onSettingsChanged) {
     ).join("");
   }
 
-  // Cache for cancel
   let cachedSettings = null;
 
-  /**
-   * Open settings panel
-   */
   async function open() {
-    // Show panel immediately, populate after loading
+    showMsg("");
     populateSelect(selectSource, "auto");
     const targetOptions = LANG_OPTIONS.filter((o) => o.value !== "auto");
     selectTarget.innerHTML = targetOptions
       .map((opt) => `<option value="${opt.value}">${opt.label}</option>`)
       .join("");
-    showMsg("");
+    // Reset key visibility
+    inputBaiduKey.type = "password";
+    btnToggleKey.innerHTML = "&#128065;";
     overlay.classList.remove("hidden");
 
     try {
@@ -90,17 +93,18 @@ export function createSettings(onSettingsChanged) {
     }
   }
 
-  /**
-   * Close settings panel
-   */
   function close() {
     overlay.classList.add("hidden");
   }
 
-  /**
-   * Save settings
-   */
   async function save() {
+    // Validate shortcut
+    if (!validateShortcut(inputShortcut.value)) {
+      showMsg("快捷键格式错误，请使用类似 Ctrl+Shift+T 的格式");
+      return;
+    }
+
+    showMsg("");
     try {
       const newSettings = {
         source_lang: selectSource.value,
@@ -128,7 +132,17 @@ export function createSettings(onSettingsChanged) {
     }
   }
 
-  // Wire events
+  // Toggle key visibility
+  btnToggleKey.addEventListener("click", () => {
+    if (inputBaiduKey.type === "password") {
+      inputBaiduKey.type = "text";
+      btnToggleKey.innerHTML = "&#128064;"; // eye-slash
+    } else {
+      inputBaiduKey.type = "password";
+      btnToggleKey.innerHTML = "&#128065;"; // eye
+    }
+  });
+
   btnSettings.addEventListener("click", open);
   btnSave.addEventListener("click", save);
   btnCancel.addEventListener("click", close);

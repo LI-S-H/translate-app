@@ -16,6 +16,8 @@ pub struct Settings {
     pub shortcut: String,
     pub window_width: f64,
     pub window_height: f64,
+    pub window_x: f64,
+    pub window_y: f64,
     pub auto_start: bool,
     pub mock_mode: bool,
     pub baidu_app_id: String,
@@ -32,6 +34,8 @@ impl Default for Settings {
             shortcut: "Ctrl+Shift+T".into(),
             window_width: 620.0,
             window_height: 380.0,
+            window_x: -1.0,
+            window_y: -1.0,
             auto_start: false,
             mock_mode: false,
             baidu_app_id: String::new(),
@@ -180,7 +184,7 @@ fn mock_translate(text: &str, from: &str, to: &str) -> TranslationResult {
     }
 
     TranslationResult {
-        translated_text: format!("[{} → {}] {}", source_lang, target, text),
+        translated_text: format!("{}（模拟翻译）", text),
         detected_language: source_lang,
         detected_language_score: detected.1,
     }

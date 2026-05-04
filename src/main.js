@@ -1,6 +1,6 @@
 // Translate App — Main Entry
 import { invoke } from "@tauri-apps/api/core";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+import { getCurrentWindow, LogicalPosition } from "@tauri-apps/api/window";
 import { createTranslator } from "./translator.js";
 import { createSettings } from "./settings.js";
 
@@ -13,6 +13,8 @@ let currentSettings = {
   shortcut: "Ctrl+Shift+T",
   window_width: 620,
   window_height: 380,
+  window_x: -1,
+  window_y: -1,
   auto_start: false,
   mock_mode: false,
   baidu_app_id: "",
@@ -73,22 +75,28 @@ async function setupWindowControls() {
     );
   });
 
-  // Save window size on resize
-  let resizeTimer;
+  // Save window size and position on resize/move
+  let saveTimer;
+  async function saveWindowGeometry() {
+    try {
+      const size = await win.outerSize();
+      const pos = await win.outerPosition();
+      currentSettings.window_width = size.width;
+      currentSettings.window_height = size.height;
+      currentSettings.window_x = pos.x;
+      currentSettings.window_y = pos.y;
+      invoke("save_settings", { newSettings: currentSettings }).catch(() => {});
+    } catch (_) {}
+  }
+
   win.onResized(() => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(async () => {
-      try {
-        const size = await win.outerSize();
-        currentSettings.window_width = size.width;
-        currentSettings.window_height = size.height;
-        invoke("save_settings", { newSettings: currentSettings }).catch(
-          () => {}
-        );
-      } catch (_) {
-        // Ignore resize errors
-      }
-    }, 1000);
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveWindowGeometry, 1000);
+  });
+
+  win.onMoved(() => {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveWindowGeometry, 1000);
   });
 }
 
@@ -147,6 +155,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     translator.refresh();
   });
 
-  // 7. Setup window controls
+  // 7. Restore window position if saved
+  if (currentSettings.window_x > 0 || currentSettings.window_y > 0) {
+    try {
+      await getCurrentWindow().setPosition(
+        new LogicalPosition(currentSettings.window_x, currentSettings.window_y)
+      );
+    } catch (_) {}
+  }
+
+  // 8. Setup window controls
   setupWindowControls();
 });

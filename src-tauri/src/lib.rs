@@ -49,7 +49,7 @@ fn save_settings(
         *settings = new_settings.clone();
     }
 
-    // Persist to store
+    // Persist to store — save() is the only method that returns Result
     let store = app
         .store("settings.json")
         .map_err(|e| format!("Store error: {}", e))?;
@@ -60,11 +60,13 @@ fn save_settings(
     let _ = store.set("shortcut", new_settings.shortcut.clone());
     let _ = store.set("windowWidth", new_settings.window_width);
     let _ = store.set("windowHeight", new_settings.window_height);
+    let _ = store.set("windowX", new_settings.window_x);
+    let _ = store.set("windowY", new_settings.window_y);
     let _ = store.set("autoStart", new_settings.auto_start);
     let _ = store.set("mockMode", new_settings.mock_mode);
     let _ = store.set("baiduAppId", new_settings.baidu_app_id.clone());
     let _ = store.set("baiduKey", new_settings.baidu_key.clone());
-    let _ = store.save();
+    store.save().map_err(|e| format!("写入设置文件失败: {}", e))?;
 
     // Apply always-on-top
     if let Some(win) = app.get_webview_window("main") {
@@ -194,6 +196,12 @@ pub fn run() {
             }
             if let Some(val) = store.get("windowHeight") {
                 settings.window_height = val.as_f64().unwrap_or(380.0);
+            }
+            if let Some(val) = store.get("windowX") {
+                settings.window_x = val.as_f64().unwrap_or(-1.0);
+            }
+            if let Some(val) = store.get("windowY") {
+                settings.window_y = val.as_f64().unwrap_or(-1.0);
             }
             if let Some(val) = store.get("autoStart") {
                 settings.auto_start = val.as_bool().unwrap_or(false);
