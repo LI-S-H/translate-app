@@ -38,8 +38,10 @@ translate-app/
 │   ├── tauri.conf.json     # Window config, app metadata
 │   ├── capabilities/default.json  # Security permissions
 │   └── src/
-│       ├── main.rs         # Desktop entry point
-│       └── lib.rs          # Tauri commands, plugins, tray, setup
+│       ├── main.rs         # Desktop entry point (generated)
+│       ├── lib.rs          # Tauri commands, plugins, tray, setup, state
+│       ├── translator.rs   # Translation engine (mock + MS API), language detect
+│       └── autostart.rs    # Windows registry auto-start management
 └── dist/                   # Vite build output (for Tauri bundler)
 ```
 
