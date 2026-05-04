@@ -31,7 +31,8 @@ export function createSettings(onSettingsChanged) {
   const inputShortcut = document.getElementById("set-shortcut");
   const inputAutostart = document.getElementById("set-autostart");
   const inputMock = document.getElementById("set-mock");
-  const inputApiKey = document.getElementById("set-apikey");
+  const inputBaiduAppId = document.getElementById("set-baidu-appid");
+  const inputBaiduKey = document.getElementById("set-baidu-key");
 
   // Populate language dropdowns
   function populateSelect(select, selectedValue) {
@@ -69,7 +70,8 @@ export function createSettings(onSettingsChanged) {
       inputShortcut.value = settings.shortcut || "Ctrl+Shift+T";
       inputAutostart.checked = settings.auto_start || false;
       inputMock.checked = settings.mock_mode !== false;
-      inputApiKey.value = settings.api_key || "";
+      inputBaiduAppId.value = settings.baidu_app_id || "";
+      inputBaiduKey.value = settings.baidu_key || "";
 
       overlay.classList.remove("hidden");
     } catch (err) {
@@ -99,7 +101,8 @@ export function createSettings(onSettingsChanged) {
         window_height: cachedSettings?.window_height ?? 380,
         auto_start: inputAutostart.checked,
         mock_mode: inputMock.checked,
-        api_key: inputApiKey.value,
+        baidu_app_id: inputBaiduAppId.value,
+        baidu_key: inputBaiduKey.value,
       };
 
       await invoke("save_settings", { newSettings });

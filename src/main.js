@@ -14,8 +14,9 @@ let currentSettings = {
   window_width: 620,
   window_height: 380,
   auto_start: false,
-  mock_mode: true,
-  api_key: "",
+  mock_mode: false,
+  baidu_app_id: "",
+  baidu_key: "",
 };
 
 // ===== Theme =====

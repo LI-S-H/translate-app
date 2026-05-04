@@ -18,7 +18,8 @@ pub struct Settings {
     pub window_height: f64,
     pub auto_start: bool,
     pub mock_mode: bool,
-    pub api_key: String,
+    pub baidu_app_id: String,
+    pub baidu_key: String,
 }
 
 impl Default for Settings {
@@ -32,13 +33,56 @@ impl Default for Settings {
             window_width: 620.0,
             window_height: 380.0,
             auto_start: false,
-            mock_mode: true,
-            api_key: String::new(),
+            mock_mode: false,
+            baidu_app_id: String::new(),
+            baidu_key: String::new(),
         }
     }
 }
 
-/// Detect if text contains Chinese characters (simple heuristic)
+// ========== Language code mapping: our code → Baidu code ==========
+
+fn to_baidu_lang(code: &str) -> &str {
+    match code {
+        "auto" => "auto",
+        "zh-Hans" | "zh" => "zh",
+        "en" => "en",
+        "ja" => "jp",
+        "ko" => "kor",
+        "fr" => "fra",
+        "de" => "de",
+        "es" => "spa",
+        "ru" => "ru",
+        "pt" => "pt",
+        "it" => "it",
+        "ar" => "ara",
+        "th" => "th",
+        "vi" => "vie",
+        _ => code,
+    }
+}
+
+fn from_baidu_lang(code: &str) -> &str {
+    match code {
+        "zh" => "zh-Hans",
+        "en" => "en",
+        "jp" => "ja",
+        "kor" => "ko",
+        "fra" => "fr",
+        "de" => "de",
+        "spa" => "es",
+        "ru" => "ru",
+        "pt" => "pt",
+        "it" => "it",
+        "ara" => "ar",
+        "th" => "th",
+        "vie" => "vi",
+        _ => code,
+    }
+}
+
+// ========== Character-set language detection ==========
+
 fn contains_chinese(text: &str) -> bool {
     text.chars().any(|c| {
         ('\u{4E00}'..='\u{9FFF}').contains(&c)
@@ -47,25 +91,20 @@ fn contains_chinese(text: &str) -> bool {
     })
 }
 
-/// Detect if text contains Japanese-specific characters (Hiragana, Katakana)
 fn contains_japanese(text: &str) -> bool {
     text.chars()
         .any(|c| ('\u{3040}'..='\u{309F}').contains(&c) || ('\u{30A0}'..='\u{30FF}').contains(&c))
 }
 
-/// Detect if text contains Korean characters
 fn contains_korean(text: &str) -> bool {
     text.chars()
         .any(|c| ('\u{AC00}'..='\u{D7AF}').contains(&c) || ('\u{1100}'..='\u{11FF}').contains(&c))
 }
 
-/// Simple language detection based on character sets
 fn detect_language(text: &str) -> (&str, f64) {
     if text.trim().is_empty() {
         return ("en", 1.0);
     }
-
-    // Check if text has any CJK characters vs ASCII letters count
     let ascii_letters = text.chars().filter(|c| c.is_ascii_alphabetic()).count();
     let cjk_chars = text
         .chars()
@@ -86,68 +125,20 @@ fn detect_language(text: &str) -> (&str, f64) {
         }
         return ("zh-Hans", 0.9);
     }
-
     ("en", 0.9)
 }
 
-/// Mock translation lookup table (zh ↔ en common phrases)
-fn mock_lookup(text: &str, from: &str, to: &str) -> Option<String> {
-    let pairs: &[(&str, &str, &str)] = &[
-        ("你好", "zh-Hans", "Hello"),
-        ("谢谢", "zh-Hans", "Thank you"),
-        ("再见", "zh-Hans", "Goodbye"),
-        ("早上好", "zh-Hans", "Good morning"),
-        ("晚安", "zh-Hans", "Good night"),
-        ("对不起", "zh-Hans", "Sorry"),
-        ("没关系", "zh-Hans", "No problem"),
-        ("欢迎", "zh-Hans", "Welcome"),
-        ("Hello", "en", "你好"),
-        ("Thank you", "en", "谢谢"),
-        ("Goodbye", "en", "再见"),
-        ("Good morning", "en", "早上好"),
-        ("Good night", "en", "晚安"),
-        ("Sorry", "en", "对不起"),
-        ("Welcome", "en", "欢迎"),
-    ];
-
-    let normalized_from = if from == "auto" || from.is_empty() {
-        "auto"
+/// Determine default target language
+pub fn default_target_lang(source_lang: &str) -> &str {
+    if source_lang == "zh-Hans" || source_lang == "zh" {
+        "en"
     } else {
-        from
-    };
-
-    for (src_text, src_lang, tgt_text) in pairs {
-        if text.eq_ignore_ascii_case(src_text) {
-            if normalized_from == "auto" || src_lang == &from {
-                if to == "en" && tgt_text == &"Hello"
-                    || to == "zh-Hans" && tgt_text == &"你好"
-                    || to == *src_lang
-                {
-                    continue;
-                }
-                // For auto mode, check if the pair direction matches
-                if normalized_from == "auto" {
-                    // If input matches the src, return the translation
-                    return Some(tgt_text.to_string());
-                } else if *src_lang == from {
-                    if *tgt_text == "你好" && to == "zh-Hans" {
-                        return Some(tgt_text.to_string());
-                    }
-                    if *tgt_text != "你好" && to == "en" {
-                        return Some(tgt_text.to_string());
-                    }
-                    if *tgt_text == "你好" && to == "en" {
-                        continue;
-                    }
-                    return Some(tgt_text.to_string());
-                }
-            }
-        }
+        "zh-Hans"
     }
-    None
 }
 
-/// Mock translation using lookup table + directional pattern
+// ========== Mock translation ==========
+
 fn mock_translate(text: &str, from: &str, to: &str) -> TranslationResult {
     let detected = detect_language(text);
     let source_lang = if from == "auto" || from.is_empty() {
@@ -155,77 +146,110 @@ fn mock_translate(text: &str, from: &str, to: &str) -> TranslationResult {
     } else {
         from.to_string()
     };
-
-    // Try lookup first
-    if let Some(result) = mock_lookup(text, &source_lang, to) {
-        return TranslationResult {
-            translated_text: result,
-            detected_language: source_lang,
-            detected_language_score: detected.1,
-        };
-    }
-
-    // Pattern-based fallback
     let target = if to == "auto" || to.is_empty() {
-        if source_lang == "zh-Hans" {
-            "en"
-        } else {
-            "zh-Hans"
-        }
+        default_target_lang(&source_lang).to_string()
     } else {
-        to
+        to.to_string()
     };
 
-    let translated = format!("[{}→{}] {}", source_lang, target, text);
+    // Simple lookup table
+    let pairs: &[(&str, &str)] = &[
+        ("你好", "Hello"),
+        ("谢谢", "Thank you"),
+        ("再见", "Goodbye"),
+        ("早上好", "Good morning"),
+        ("晚安", "Good night"),
+        ("对不起", "Sorry"),
+        ("没关系", "No problem"),
+        ("欢迎", "Welcome"),
+        ("Hello", "你好"),
+        ("Thank you", "谢谢"),
+        ("Goodbye", "再见"),
+        ("Good morning", "早上好"),
+        ("Good night", "晚安"),
+        ("Sorry", "对不起"),
+        ("Welcome", "欢迎"),
+    ];
+
+    for (src, tgt) in pairs {
+        if text.eq_ignore_ascii_case(src) {
+            if (source_lang.starts_with("zh") && target == "en")
+                || (source_lang == "en" && target.starts_with("zh"))
+            {
+                return TranslationResult {
+                    translated_text: tgt.to_string(),
+                    detected_language: source_lang,
+                    detected_language_score: detected.1,
+                };
+            }
+        }
+    }
 
     TranslationResult {
-        translated_text: translated,
+        translated_text: format!("[{} → {}] {}", source_lang, target, text),
         detected_language: source_lang,
         detected_language_score: detected.1,
     }
 }
 
-/// Real Microsoft Translator API call
-async fn ms_translate(text: &str, from: &str, to: &str, api_key: &str) -> Result<TranslationResult, String> {
-    let client = reqwest::Client::new();
+// ========== Baidu Translate API ==========
 
-    let mut url = "https://api.cognitive.microsofttranslator.com/translate?api-version=3.0".to_string();
-    url.push_str(&format!("&to={}", to));
-    if !from.is_empty() && from != "auto" {
-        url.push_str(&format!("&from={}", from));
+fn md5_hex(input: &str) -> String {
+    use std::fmt::Write;
+    let digest = md5::compute(input.as_bytes());
+    let mut s = String::with_capacity(32);
+    for byte in digest.0 {
+        write!(&mut s, "{:02x}", byte).unwrap();
     }
+    s
+}
 
-    let body = vec![serde_json::json!({"Text": text})];
+async fn baidu_translate(
+    text: &str,
+    from: &str,
+    to: &str,
+    app_id: &str,
+    key: &str,
+) -> Result<TranslationResult, String> {
+    let client = reqwest::Client::new();
+    let baidu_from = to_baidu_lang(from);
+    let baidu_to = to_baidu_lang(to);
+    let salt = rand::random::<u32>().to_string();
+
+    // Sign = MD5(appid + q + salt + key)
+    let sign_input = format!("{}{}{}{}", app_id, text, salt, key);
+    let sign = md5_hex(&sign_input);
 
     let resp = client
-        .post(&url)
-        .header("Ocp-Apim-Subscription-Key", api_key)
-        .header("Content-Type", "application/json; charset=UTF-8")
-        .json(&body)
+        .post("https://fanyi-api.baidu.com/api/trans/vip/translate")
+        .form(&[
+            ("q", text),
+            ("from", baidu_from),
+            ("to", baidu_to),
+            ("appid", app_id),
+            ("salt", &salt),
+            ("sign", &sign),
+        ])
         .send()
         .await
         .map_err(|e| format!("Network error: {}", e))?;
 
-    if !resp.status().is_success() {
-        let status = resp.status();
-        let err_body = resp.text().await.unwrap_or_default();
-        return Err(format!("API error {}: {}", status.as_u16(), err_body));
+    let body = resp.text().await.map_err(|e| format!("Read error: {}", e))?;
+
+    let json: serde_json::Value =
+        serde_json::from_str(&body).map_err(|e| format!("Parse error: {} — body: {}", e, body))?;
+
+    // Check for Baidu API error
+    if let Some(err_code) = json.get("error_code") {
+        let err_msg = json.get("error_msg").and_then(|v| v.as_str()).unwrap_or("unknown");
+        return Err(format!("Baidu API error {}: {}", err_code, err_msg));
     }
 
-    let json: serde_json::Value = resp
-        .json()
-        .await
-        .map_err(|e| format!("Parse error: {}", e))?;
-
-    let first = &json[0];
-    let detected = first["detectedLanguage"]["language"]
+    let from_lang = json["from"]
         .as_str()
-        .unwrap_or("unknown")
-        .to_string();
-    let score = first["detectedLanguage"]["score"]
-        .as_f64()
-        .unwrap_or(1.0);
-    let translated = first["translations"][0]["text"]
+        .unwrap_or("unknown");
+    let detected = from_baidu_lang(from_lang).to_string();
+    let translated = json["trans_result"][0]["dst"]
         .as_str()
         .unwrap_or("")
         .to_string();
@@ -233,12 +257,20 @@ async fn ms_translate(text: &str, from: &str, to: &str, api_key: &str) -> Result
     Ok(TranslationResult {
         translated_text: translated,
         detected_language: detected,
-        detected_language_score: score,
+        detected_language_score: 1.0,
     })
 }
 
-/// Main translate function: mock or real API
-pub async fn translate(text: String, from: String, mut to: String, mock_mode: bool, api_key: String) -> Result<TranslationResult, String> {
+// ========== Main translate entry ==========
+
+pub async fn translate(
+    text: String,
+    from: String,
+    mut to: String,
+    mock_mode: bool,
+    baidu_app_id: String,
+    baidu_key: String,
+) -> Result<TranslationResult, String> {
     if text.trim().is_empty() {
         return Ok(TranslationResult {
             translated_text: String::new(),
@@ -247,24 +279,17 @@ pub async fn translate(text: String, from: String, mut to: String, mock_mode: bo
         });
     }
 
-    // If target is auto/empty, determine default target based on detected source
+    // Determine target language if auto
     if to == "auto" || to.is_empty() {
         let detected = detect_language(&text);
         to = default_target_lang(detected.0).to_string();
     }
 
-    if mock_mode || api_key.is_empty() {
+    let can_use_baidu = !baidu_app_id.is_empty() && !baidu_key.is_empty();
+
+    if mock_mode || !can_use_baidu {
         Ok(mock_translate(&text, &from, &to))
     } else {
-        ms_translate(&text, &from, &to, &api_key).await
-    }
-}
-
-/// Determine default target language based on detected source
-pub fn default_target_lang(source_lang: &str) -> &str {
-    if source_lang == "zh-Hans" || source_lang == "zh" {
-        "en"
-    } else {
-        "zh-Hans"
+        baidu_translate(&text, &from, &to, &baidu_app_id, &baidu_key).await
     }
 }

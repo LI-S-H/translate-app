@@ -2,14 +2,14 @@
 
 ## Project: Translate App
 
-A lightweight Windows desktop translation tool built with Tauri v2 + vanilla HTML/CSS/JS + Microsoft Translator API.
+A lightweight Windows desktop translation tool built with Tauri v2 + vanilla HTML/CSS/JS + Baidu Translate API.
 
 ## Tech Stack
 
 - **Desktop Framework:** Tauri v2 (Rust backend + Web frontend)
 - **Frontend:** Vanilla HTML/CSS/JS (ES modules, Vite dev server)
 - **Backend:** Rust (Tauri commands, reqwest for HTTP)
-- **Translation API:** Microsoft Azure Translator Text API v3.0 (mock mode for development)
+- **Translation API:** Baidu Translate API (fanyi-api.baidu.com), with mock fallback
 - **Packager:** npm, Cargo
 - **Platform:** Windows 11 (primary target)
 
@@ -72,13 +72,14 @@ translate-app/
    - Mock mode toggle
    - API key configuration
 
-## Translation API (Microsoft Translator)
+## Translation API (Baidu Translate)
 
-- **Endpoint:** `POST https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&from={src}&to={tgt}`
-- **Auth:** Header `Ocp-Apim-Subscription-Key: {key}`
-- **Body:** `[{"Text": "text to translate"}]`
-- **Response:** `[{"detectedLanguage": {...}, "translations": [{"text": "...", "to": "..."}]}]`
-- **Auto-detect:** Omit `from` parameter; response includes `detectedLanguage`
+- **Endpoint:** `POST https://fanyi-api.baidu.com/api/trans/vip/translate`
+- **Auth:** MD5 signature: `MD5(appid + q + salt + key)`, sent as form fields
+- **Parameters:** `q` (text), `from`, `to`, `appid`, `salt`, `sign`
+- **Response:** `{"from": "zh", "to": "en", "trans_result": [{"src": "...", "dst": "..."}]}`
+- **Language codes:** Our internal codes (zh-Hans, ja, ko, fr, es, ar, vi) mapped to Baidu codes (zh, jp, kor, fra, spa, ara, vie)
+- **Credentials:** Configured in settings UI, stored locally via tauri-plugin-store — NEVER committed to git
 
 ## Data Flow
 
@@ -124,7 +125,8 @@ User types in textarea
   "windowWidth": 620,
   "windowHeight": 380,
   "autoStart": false,
-  "mockMode": true,
-  "apiKey": ""
+  "mockMode": false,
+  "baiduAppId": "",
+  "baiduKey": ""
 }
 ```

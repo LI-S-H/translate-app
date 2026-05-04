@@ -24,11 +24,11 @@ async fn translate_text(
     to: String,
     state: State<'_, AppState>,
 ) -> Result<TranslationResult, String> {
-    let (mock_mode, api_key) = {
+    let (mock_mode, baidu_app_id, baidu_key) = {
         let settings = state.settings.lock().unwrap();
-        (settings.mock_mode, settings.api_key.clone())
+        (settings.mock_mode, settings.baidu_app_id.clone(), settings.baidu_key.clone())
     };
-    translate(text, from, to, mock_mode, api_key).await
+    translate(text, from, to, mock_mode, baidu_app_id, baidu_key).await
 }
 
 #[tauri::command]
@@ -60,7 +60,8 @@ fn save_settings(
     let _ = store.set("windowHeight", new_settings.window_height);
     let _ = store.set("autoStart", new_settings.auto_start);
     let _ = store.set("mockMode", new_settings.mock_mode);
-    let _ = store.set("apiKey", new_settings.api_key.clone());
+    let _ = store.set("baiduAppId", new_settings.baidu_app_id.clone());
+    let _ = store.set("baiduKey", new_settings.baidu_key.clone());
     let _ = store.save();
 
     // Apply always-on-top
@@ -194,8 +195,11 @@ pub fn run() {
             if let Some(val) = store.get("mockMode") {
                 settings.mock_mode = val.as_bool().unwrap_or(true);
             }
-            if let Some(val) = store.get("apiKey") {
-                settings.api_key = val.as_str().unwrap_or("").to_string();
+            if let Some(val) = store.get("baiduAppId") {
+                settings.baidu_app_id = val.as_str().unwrap_or("").to_string();
+            }
+            if let Some(val) = store.get("baiduKey") {
+                settings.baidu_key = val.as_str().unwrap_or("").to_string();
             }
 
             Ok(())
