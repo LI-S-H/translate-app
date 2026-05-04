@@ -1,0 +1,40 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nicedoc/tauri/refs/heads/dev/.schema/config.schema.json",
+  "productName": "Translate",
+  "version": "0.1.0",
+  "identifier": "com.translate.app",
+  "build": {
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../dist",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Translate",
+        "width": 620,
+        "height": 380,
+        "minWidth": 480,
+        "minHeight": 280,
+        "center": true,
+        "alwaysOnTop": true,
+        "resizable": true,
+        "decorations": true,
+        "maximizable": true,
+        "minimizable": true,
+        "closable": true,
+        "visible": true,
+        "focus": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "plugins": {
+    "store": {},
+    "global-shortcut": {}
+  }
+}

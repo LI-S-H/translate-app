@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Translate</title>
+  <link rel="stylesheet" href="/src/styles.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- titlebar -->
+    <div id="titlebar" data-tauri-drag-region>
+      <div class="titlebar-left">
+        <span class="app-name">Translate</span>
+        <button id="btn-pin" class="icon-btn active" title="置顶">&#128204;</button>
+        <button id="btn-theme" class="icon-btn" title="切换主题">&#127769;</button>
+        <button id="btn-settings" class="icon-btn" title="设置">&#9881;</button>
+      </div>
+      <div class="titlebar-right">
+        <button id="btn-minimize" class="icon-btn" title="最小化">&#947;</button>
+        <button id="btn-maximize" class="icon-btn" title="最大化">&#9633;</button>
+        <button id="btn-close" class="icon-btn btn-close" title="关闭">&#10005;</button>
+      </div>
+    </div>
+
+    <!-- main content -->
+    <div id="main-content">
+      <!-- left: input -->
+      <div class="panel panel-left">
+        <div class="lang-row">
+          <select id="source-lang" class="lang-select">
+            <option value="auto">自动检测</option>
+            <option value="zh-Hans">中文</option>
+            <option value="en">English</option>
+            <option value="ja">日本語</option>
+            <option value="ko">한국어</option>
+            <option value="fr">Français</option>
+            <option value="de">Deutsch</option>
+            <option value="es">Español</option>
+            <option value="ru">Русский</option>
+            <option value="pt">Português</option>
+            <option value="it">Italiano</option>
+            <option value="ar">العربية</option>
+            <option value="th">ไทย</option>
+            <option value="vi">Tiếng Việt</option>
+          </select>
+        </div>
+        <textarea id="input-area" placeholder="输入要翻译的内容..." autofocus></textarea>
+      </div>
+
+      <!-- swap button -->
+      <div class="swap-col">
+        <button id="btn-swap" class="icon-btn swap-btn" title="交换语言">&#8644;</button>
+      </div>
+
+      <!-- right: output -->
+      <div class="panel panel-right">
+        <div class="lang-row">
+          <select id="target-lang" class="lang-select">
+            <option value="en">English</option>
+            <option value="zh-Hans">中文</option>
+            <option value="ja">日本語</option>
+            <option value="ko">한국어</option>
+            <option value="fr">Français</option>
+            <option value="de">Deutsch</option>
+            <option value="es">Español</option>
+            <option value="ru">Русский</option>
+            <option value="pt">Português</option>
+            <option value="it">Italiano</option>
+            <option value="ar">العربية</option>
+            <option value="th">ไทย</option>
+            <option value="vi">Tiếng Việt</option>
+          </select>
+        </div>
+        <div id="output-area" class="output-area">
+          <span class="placeholder">翻译结果</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- status bar -->
+    <div id="statusbar">
+      <span id="detected-lang"></span>
+      <span id="status-text">就绪</span>
+    </div>
+  </div>
+
+  <!-- settings modal -->
+  <div id="settings-overlay" class="hidden">
+    <div id="settings-panel">
+      <h3>设置</h3>
+      <div class="setting-item">
+        <label>默认源语言</label>
+        <select id="set-source-lang"></select>
+      </div>
+      <div class="setting-item">
+        <label>默认目标语言</label>
+        <select id="set-target-lang"></select>
+      </div>
+      <div class="setting-item">
+        <label>全局快捷键</label>
+        <input id="set-shortcut" type="text" placeholder="Ctrl+Shift+T" />
+      </div>
+      <div class="setting-item">
+        <label>开机自启</label>
+        <input id="set-autostart" type="checkbox" />
+      </div>
+      <div class="setting-item">
+        <label>Mock 模式</label>
+        <input id="set-mock" type="checkbox" />
+      </div>
+      <div class="setting-item">
+        <label>API Key</label>
+        <input id="set-apikey" type="password" placeholder="Azure Translator Key" />
+      </div>
+      <div class="settings-buttons">
+        <button id="btn-save-settings">保存</button>
+        <button id="btn-cancel-settings">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
