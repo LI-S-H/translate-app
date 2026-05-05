@@ -3,7 +3,7 @@
 桌面翻译工具，基于 [Tauri v2](https://v2.tauri.app/) + 百度翻译 API 构建，支持多语言互译。
 
 ![platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue)
-![version](https://img.shields.io/badge/version-0.1.0-orange)
+![version](https://img.shields.io/badge/version-0.2.0-orange)
 
 ## 功能
 
@@ -12,14 +12,15 @@
 - 窗口始终置顶，随用随走
 - 系统托盘驻留，不占任务栏
 - 全局快捷键 `Ctrl+Shift+T` 切换显示/隐藏
-- 浅色 / 深色主题切换
+- 浅色 / 深色主题切换（平滑过渡）
 - 开机自启选项
 - 自定义翻译语言、快捷键
 - 百度翻译 API 配置
+- 暖金色主题 UI，Inter 字体，精致圆角设计
 
 ## 安装
 
-从 [Releases](https://github.com/LI-S-H/translate-app/releases) 下载最新 `Translate-vX.X.X.msi`，双击安装即可。
+从 [Releases](https://github.com/LI-S-H/translate-app/releases) 下载最新 `Translate_0.2.0_x64_en-US.msi`，双击安装即可。
 
 > 需要 Windows 10 或 Windows 11（自带 WebView2 运行时）。
 
@@ -32,11 +33,10 @@
 | 交换语言 | 点击中间 ⇄ 按钮 |
 | 复制结果 | 点击输出框左下角复制图标 |
 | 清除输入 | 点击输入框右上角 ✕ 按钮 |
-| 窗口置顶 | 点击标题栏 📌 图标 |
+| 窗口置顶 | 点击标题栏 📌 图标（金色激活态） |
 | 切换主题 | 点击标题栏 ☀/🌙 图标 |
 | 设置 | 点击标题栏 ⚙ 图标，配置语言 / 快捷键 / API 等 |
-| 隐藏窗口 | 点击 ✕ 关闭按钮（隐藏到托盘） |
-| 托盘退出 | 右键托盘图标 → 退出 |
+| 退出程序 | 点击 ✕ 关闭按钮彻底退出 |
 
 ## 百度翻译 API 配置
 
@@ -75,14 +75,16 @@ npm run tauri build
 ├── vite.config.js          # Vite 配置
 ├── src/                    # 前端源码
 │   ├── main.js             # 应用入口
+│   ├── tauri-bridge.js     # Tauri IPC 桥接
 │   ├── translator.js       # 翻译模块
 │   ├── settings.js         # 设置面板
-│   └── styles.css          # 主题样式
+│   ├── dropdown.js          # 自定义下拉组件
+│   └── styles.css          # 主题样式（Inter 字体 + 暖金色调）
 └── src-tauri/              # Rust 后端
     ├── Cargo.toml          # Rust 依赖
     ├── tauri.conf.json     # Tauri 窗口与打包配置
     └── src/
-        ├── lib.rs          # Tauri 命令、托盘、快捷键、设置
+        ├── lib.rs          # Tauri 命令、托盘、快捷键、退出
         ├── translator.rs   # 翻译引擎（Mock + 百度 API）
         └── autostart.rs    # 开机自启管理
 ```
