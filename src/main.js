@@ -1,5 +1,5 @@
 // Translate App — Main Entry
-import { invoke, getCurrentWindow, LogicalPosition } from "./tauri-bridge.js";
+import { invoke, getCurrentWindow, LogicalPosition, exitApp } from "./tauri-bridge.js";
 import { createTranslator } from "./translator.js";
 import { createSettings } from "./settings.js";
 
@@ -58,7 +58,7 @@ async function setupWindowControls() {
   });
 
   document.getElementById("btn-close").addEventListener("click", () => {
-    win.close();
+    exitApp().catch(() => win.close());
   });
 
   const pinBtn = document.getElementById("btn-pin");

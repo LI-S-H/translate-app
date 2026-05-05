@@ -88,6 +88,11 @@ fn get_autostart_status() -> Result<bool, String> {
     autostart::get_autostart()
 }
 
+#[tauri::command]
+fn exit_app(app: tauri::AppHandle) {
+    app.exit(0);
+}
+
 // ===== App Entry Point =====
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -230,6 +235,7 @@ pub fn run() {
             get_settings,
             save_settings,
             get_autostart_status,
+            exit_app,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

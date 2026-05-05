@@ -41,6 +41,11 @@ export function getCurrentWindow() {
   };
 }
 
+export function exitApp() {
+  if (!T) return Promise.reject(new Error("Not in Tauri context"));
+  return T.invoke("exit_app");
+}
+
 export function LogicalPosition(x, y) {
   return { x, y, type: "Logical" };
 }

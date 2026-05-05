@@ -1,5 +1,6 @@
 // Settings panel module
 import { invoke } from "./tauri-bridge.js";
+import { createDropdown } from "./dropdown.js";
 
 const LANG_OPTIONS = [
   { value: "auto", label: "自动检测" },
@@ -40,29 +41,35 @@ export function createSettings(onSettingsChanged) {
   const inputBaiduKey = document.getElementById("set-baidu-key");
   const msgEl = document.getElementById("settings-msg");
 
+  // 自定义下拉实例（open 时重建）
+  let sourceDropdown = null;
+  let targetDropdown = null;
+  const targetLangOptions = LANG_OPTIONS.filter((o) => o.value !== "auto");
+
   function showMsg(text) {
     msgEl.textContent = text;
     msgEl.style.display = text ? "block" : "none";
   }
 
-  function populateSelect(select, selectedValue) {
+  function populateSelect(select, selectedValue, rebuildDropdown) {
     select.innerHTML = LANG_OPTIONS.map(
       (opt) =>
         `<option value="${opt.value}" ${
           opt.value === selectedValue ? "selected" : ""
         }>${opt.label}</option>`
     ).join("");
+    if (rebuildDropdown) rebuildDropdown();
   }
 
   let cachedSettings = null;
 
   async function open() {
     showMsg("");
-    populateSelect(selectSource, "auto");
-    const targetOptions = LANG_OPTIONS.filter((o) => o.value !== "auto");
-    selectTarget.innerHTML = targetOptions
-      .map((opt) => `<option value="${opt.value}">${opt.label}</option>`)
-      .join("");
+
+    // 先清理旧的自定义下拉 DOM
+    if (sourceDropdown) sourceDropdown.container.remove();
+    if (targetDropdown) targetDropdown.container.remove();
+
     overlay.classList.remove("hidden");
 
     try {
@@ -70,7 +77,7 @@ export function createSettings(onSettingsChanged) {
       cachedSettings = { ...settings };
 
       populateSelect(selectSource, settings.source_lang);
-      selectTarget.innerHTML = targetOptions
+      selectTarget.innerHTML = targetLangOptions
         .map(
           (opt) =>
             `<option value="${opt.value}" ${
@@ -78,6 +85,10 @@ export function createSettings(onSettingsChanged) {
             }>${opt.label}</option>`
         )
         .join("");
+
+      // 创建自定义下拉
+      sourceDropdown = createDropdown(selectSource, LANG_OPTIONS);
+      targetDropdown = createDropdown(selectTarget, targetLangOptions);
 
       inputShortcut.value = settings.shortcut || "Ctrl+Shift+T";
       inputAutostart.checked = settings.auto_start || false;

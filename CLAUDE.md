@@ -69,9 +69,9 @@ translate-app/
 
 - **main.js** — 应用入口。加载持久化设置、应用主题、初始化翻译和设置模块、窗口拖拽（标题栏 mousedown → `__TAURI_INTERNALS__.invoke("plugin:window|start_dragging")`）、最小化/关闭/置顶/主题切换、窗口大小和位置自动保存。
 - **tauri-bridge.js** — Tauri IPC 桥接。用 `window.__TAURI_INTERNALS__` 封装 `invoke` 和 `getCurrentWindow`（minimize/close/setAlwaysOnTop/startDragging/outerSize/outerPosition/setPosition/onResized/onMoved），避免 Vite 预构建问题。
-- **translator.js** — 翻译控制器。输入事件防抖 500ms 后调用 `translate_text`，更新输出区域，处理语言切换和交换按钮，左下角复制按钮（SVG 图标，点击闪烁反馈），输入框右上角清除按钮，模拟模式状态显示。
+- **translator.js** — 翻译控制器。输入事件防抖 500ms 后调用 `translate_text`，更新输出区域，处理语言切换和交换按钮，左下角复制按钮（SVG 图标，点击闪烁反馈），输入框右上角清除按钮（hover 容器时显示），模拟模式状态显示。状态栏仅显示"就绪"状态文字，已移除语言检测标识和字符计数。
 - **settings.js** — 设置面板控制器。打开弹窗、从后端加载设置填入表单、保存时校验快捷键格式、保存时发送完整字段（含 window_x/window_y）、通过 `save_settings` 命令持久化，变更后回调通知主模块刷新 UI。
-- **styles.css** — 完整浅色/深色主题，CSS 变量 + `[data-theme="dark"]`。左右 Flexbox 布局，无边框弹窗风格（`decorations: false`），圆角 8px。标题栏按钮统一 28×28 低透明度 (0.55)。输入输出框文字左上对齐。
+- **styles.css** — 完整浅色/深色主题，CSS 变量 + `[data-theme="dark"]`。参考 Claude Code 桌面端设计：Inter 字体（Google Fonts），暖金色强调色（`#d97706`/`#f59e0b`），10px 圆角，1px 细边框，聚焦时暖金色光晕（`box-shadow`），左右 Flexbox 布局。标题栏 38px 高，按钮 30×30。输入输出框内边距 14px，清除/复制按钮 hover 父容器时显示。状态栏无分割线，仅右侧显示"就绪"。设置弹窗带 `backdrop-filter` 模糊效果。自定义细滚动条（4px）。
 
 ## 功能清单
 
@@ -107,20 +107,22 @@ translate-app/
 用户输入 → input 事件触发 → 500ms 防抖 → 调用 Tauri 命令 "translate_text"
 → Rust 后端：判断 mock/真实 API → POST 百度翻译 API / mock 查表
 → 返回 { translated_text, detected_language }
-→ 显示在右侧输出区域
+→ 翻译结果显示在右侧输出区域，状态栏显示"就绪"（含模拟模式标记）
 ```
 
 ## 界面布局（左右并排）
 
 ```
 ┌──────────────────────────────────────────────┐
-│  Translate  📌  🌙  ⚙               −    ×   │  ← 无边框，标题栏可拖拽
-│──────────────────────────────────────────────│
-│  源语言: [▼]     ⇄     目标语言: [▼]         │
-│  ┌────────────┐       ┌──────────────┐ [📋] │  ← 左下角复制按钮
-│  │  输入框     │       │  输出框       │      │
-│  │         [×] │       │               │      │  ← 右上角清除按钮
-│  └────────────┘       └──────────────┘      │
+│  Translate  📌  🌙  ⚙               −    ×   │  ← 无边框，标题栏可拖拽（38px）
+│                                              │
+│  源语言: [▼]           ⇄          目标语言: [▼] │
+│  ┌────────────┐                  ┌──────────┐│
+│  │  输入框     │                  │  输出框   ││
+│  │         [×] │                  │     [📋]  ││  ← 清除/复制按钮 hover 显示
+│  └────────────┘                  └──────────┘│
+│                                              │
+│                                      就绪    │  ← 状态栏（无分割线）
 └──────────────────────────────────────────────┘
 ```
 
