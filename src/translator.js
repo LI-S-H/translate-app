@@ -1,5 +1,6 @@
 // Translation module — debounce, IPC calls, UI update, clipboard
 import { invoke } from "./tauri-bridge.js";
+import { createDropdown } from "./dropdown.js";
 
 const DEBOUNCE_MS = 500;
 const MAX_CHARS = 5000;
@@ -29,23 +30,15 @@ export function createTranslator(settings) {
   const sourceSelect = document.getElementById("source-lang");
   const targetSelect = document.getElementById("target-lang");
   const swapBtn = document.getElementById("btn-swap");
-  const detectedLangEl = document.getElementById("detected-lang");
   const statusText = document.getElementById("status-text");
-  const charCountEl = document.getElementById("char-count");
   const clearBtn = document.getElementById("btn-clear");
   const copyBtn = document.getElementById("btn-copy");
 
   let isLoading = false;
   let pendingTranslation = null;
 
-  function updateCharCount() {
-    const len = inputArea.value.length;
-    if (charCountEl) {
-      charCountEl.textContent = String(len);
-      charCountEl.classList.toggle("over-limit", len > MAX_CHARS);
-    }
-    // Show/hide clear button
-    if (clearBtn) clearBtn.classList.toggle("hidden", len === 0);
+  function updateClearBtn() {
+    if (clearBtn) clearBtn.classList.toggle("hidden", inputArea.value.length === 0);
   }
 
   function updateCopyBtn() {
@@ -57,11 +50,10 @@ export function createTranslator(settings) {
 
   async function doTranslate() {
     const text = inputArea.value;
-    updateCharCount();
+    updateClearBtn();
 
     if (!text.trim()) {
       outputArea.innerHTML = '<span class="placeholder">翻译结果</span>';
-      detectedLangEl.textContent = "";
       statusText.textContent = "就绪";
       updateCopyBtn();
       return;
@@ -87,9 +79,6 @@ export function createTranslator(settings) {
     try {
       const result = await invoke("translate_text", { text, from, to });
       outputArea.textContent = result.translated_text;
-      if (result.detected_language) {
-        detectedLangEl.textContent = `检测: ${result.detected_language}`;
-      }
       const mockText = appSettings.current.mock_mode ? " [模拟]" : "";
       statusText.textContent = `就绪${mockText}`;
       updateCopyBtn();
@@ -103,6 +92,7 @@ export function createTranslator(settings) {
         outputArea.innerHTML = `<span class="error-text">翻译失败: ${msg}</span>`;
       }
       statusText.textContent = "错误";
+      updateCopyBtn();
     } finally {
       isLoading = false;
       // If pending input changed while loading, run another translation
@@ -135,13 +125,15 @@ export function createTranslator(settings) {
     const tgtVal = targetSelect.value;
 
     if (srcVal === "auto") {
-      // When source is auto, set source = target, target = auto's default
       sourceSelect.value = tgtVal;
       targetSelect.value = defaultTarget(tgtVal);
     } else {
       sourceSelect.value = tgtVal;
       targetSelect.value = srcVal;
     }
+    // 同步自定义下拉显示
+    sourceDropdown.value = sourceSelect.value;
+    targetDropdown.value = targetSelect.value;
 
     // Swap text: output becomes input
     const outputText = outputArea.textContent;
@@ -152,8 +144,7 @@ export function createTranslator(settings) {
     if (!hasPlaceholder && !hasError && !isDefault && outputText.trim()) {
       inputArea.value = outputText;
       outputArea.innerHTML = '<span class="placeholder">翻译结果</span>';
-      detectedLangEl.textContent = "";
-      updateCharCount();
+      updateClearBtn();
     }
     debouncedTranslate();
   }
@@ -166,14 +157,34 @@ export function createTranslator(settings) {
 
     const ok = await copyToClipboard(text);
     if (ok) {
+      copyBtn.classList.remove("flash");
+      void copyBtn.offsetWidth;
       copyBtn.classList.add("flash");
+      copyBtn.addEventListener("animationend", () => copyBtn.classList.remove("flash"), { once: true });
       statusText.textContent = "已复制";
       setTimeout(() => {
-        copyBtn.classList.remove("flash");
         if (statusText.textContent === "已复制") statusText.textContent = "就绪";
-      }, 1200);
+      }, 500);
     }
   }
+
+  // 初始化自定义下拉菜单
+  const sourceDropdown = createDropdown(sourceSelect);
+  const targetDropdown = createDropdown(targetSelect, [
+    { value: "en",       label: "English" },
+    { value: "zh-Hans",  label: "中文" },
+    { value: "ja",       label: "日本語" },
+    { value: "ko",       label: "한국어" },
+    { value: "fr",       label: "Français" },
+    { value: "de",       label: "Deutsch" },
+    { value: "es",       label: "Español" },
+    { value: "ru",       label: "Русский" },
+    { value: "pt",       label: "Português" },
+    { value: "it",       label: "Italiano" },
+    { value: "ar",       label: "العربية" },
+    { value: "th",       label: "ไทย" },
+    { value: "vi",       label: "Tiếng Việt" },
+  ]);
 
   // Wire events
   inputArea.addEventListener("input", debouncedTranslate);
@@ -184,9 +195,8 @@ export function createTranslator(settings) {
   clearBtn.addEventListener("click", () => {
     inputArea.value = "";
     outputArea.innerHTML = '<span class="placeholder">翻译结果</span>';
-    detectedLangEl.textContent = "";
     statusText.textContent = "就绪";
-    updateCharCount();
+    updateClearBtn();
     updateCopyBtn();
   });
 
