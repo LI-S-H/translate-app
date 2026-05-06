@@ -3,7 +3,7 @@
 桌面翻译工具，基于 [Tauri v2](https://v2.tauri.app/) + 百度翻译 API 构建，支持多语言互译。
 
 ![platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue)
-![version](https://img.shields.io/badge/version-0.3.1-orange)
+![version](https://img.shields.io/badge/version-0.3.2-orange)
 
 ## 功能
 
@@ -20,7 +20,7 @@
 
 ## 安装
 
-1. 从 [Releases](https://github.com/LI-S-H/translate-app/releases) 下载最新 `Translate_0.3.1_x64_en-US.msi`
+1. 从 [Releases](https://github.com/LI-S-H/translate-app/releases) 下载最新 `Translate_0.3.2_x64_en-US.msi`
 2. 双击安装即可
 
 > 需要 Windows 10 或 Windows 11（自带 WebView2 运行时）。
