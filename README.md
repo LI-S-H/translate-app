@@ -3,24 +3,24 @@
 桌面翻译工具，基于 [Tauri v2](https://v2.tauri.app/) + 百度翻译 API 构建，支持多语言互译。
 
 ![platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue)
-![version](https://img.shields.io/badge/version-0.2.0-orange)
+![version](https://img.shields.io/badge/version-0.3.0-orange)
 
 ## 功能
 
 - 中文 ↔ 英文及多语言实时翻译
+- **划词翻译**：选中任意应用中的文字，按快捷键自动填入并翻译
 - 自动检测源语言
 - 窗口始终置顶，随用随走
 - 系统托盘驻留，不占任务栏
-- 全局快捷键 `Ctrl+Shift+T` 切换显示/隐藏
+- 全局快捷键自定义（按键捕获识别，无需手动键入）
 - 浅色 / 深色主题切换（平滑过渡）
 - 开机自启选项
-- 自定义翻译语言、快捷键
 - 百度翻译 API 配置
-- 暖金色主题 UI，Inter 字体，精致圆角设计
+- Apple 风格 UI：毛玻璃质感、多层阴影深度、统一大圆角设计
 
 ## 安装
 
-从 [Releases](https://github.com/LI-S-H/translate-app/releases) 下载最新 `Translate_0.2.0_x64_en-US.msi`，双击安装即可。
+从 [Releases](https://github.com/LI-S-H/translate-app/releases) 下载最新 `Translate_0.3.0_x64_en-US.msi`，双击安装即可。
 
 > 需要 Windows 10 或 Windows 11（自带 WebView2 运行时）。
 

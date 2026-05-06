@@ -1,6 +1,6 @@
 [package]
 name = "translate-app"
-version = "0.1.0"
+version = "0.3.0"
 description = "A lightweight desktop translation tool"
 authors = [""]
 edition = "2021"
