@@ -6,19 +6,38 @@ Windows 桌面翻译工具，基于 Tauri v2 + 原生 HTML/CSS/JS + 百度翻译
 
 ## 工作流规范（Skill 强制调用）
 
-以下 Skill 在满足条件时**必须调用**，不得跳过：
+**以下规则为 BLOCKING（阻塞级），满足触发条件时必须先调用 Skill，不允许跳过直接进入下一步。**
 
-| 条件 | Skill | 说明 |
-|------|-------|------|
-| 遇到任何 bug、崩溃、异常行为 | `/systematic-debugging` | 先定位根因再修改，不允许凭猜测修 |
-| 声明"已修复"或任务完成前 | `/verification-before-completion` | 必须实际运行验证，不允许只看编译通过 |
-| 合并分支、推送前 | `/requesting-code-review` | 自查代码一致性、字段匹配、遗漏 |
-| 修改超过 3 个文件或重构完成 | `/simplify` | 检查冗余代码、风格统一、可复用性 |
-| 收到 bug 报告需要修复时 | `/bug-fix` | 理解问题 → 复现 → 修复 → 验证，形成闭环 |
-| 新功能开发前 | `/brainstorming` | 先讨论方案和影响范围，不私自修改 |
+### 触发规则清单
+
+> **规则 1** — 当你看到用户消息包含「bug」「报错」「崩溃」「异常」「不工作」「修一下」「修复」「有问题」「不行」「没用」「失效」等关键词时：
+> → **立即调用** `Skill("anthropic-skills:bug-fix")`，传入用户描述的完整问题。
+> → 在 bug-fix 流程中制定修复计划、获得用户确认后，才能开始改代码。
+
+> **规则 2** — 当你准备说「已修复」「完成了」「改好了」「OK 了」之前：
+> → **先调用** `Skill("anthropic-skills:verification-before-completion")`，实际运行验证。
+> → 验证通过后才能向用户声明完成。
+
+> **规则 3** — 当你准备执行 `git push`、`gh pr create`、`gh pr merge`、合并分支之前：
+> → **先调用** `Skill("anthropic-skills:requesting-code-review")`，自查代码一致性。
+
+> **规则 4** — 当本轮会话修改涉及 **3 个及以上文件**，或完成一轮重构后：
+> → **调用** `Skill("anthropic-skills:simplify")`，检查冗余和风格统一。
+
+> **规则 5** — 当用户要求开发**新功能**（非 bug 修复）时：
+> → **先调用** `Skill("anthropic-skills:brainstorming")`，讨论方案后动手。
+
+### 自检清单（每轮回复末尾自问）
+
+1. 本轮是否修复了 bug？→ 我应该先调了 `bug-fix` ✅/❌
+2. 本轮是否声明了"完成/已修复"？→ 我应该先调了 `verification-before-completion` ✅/❌
+3. 本轮是否做了 git 推送/合并？→ 我应该先调了 `requesting-code-review` ✅/❌
+4. 本轮是否改了 3+ 文件？→ 我应该调了 `simplify` ✅/❌
 
 **关键原则：**
 - "能用"不等于"修好了"——必须验证功能确实生效（打开设置、点保存、拖动窗口）
+- 思考过程（thinking）使用中文
+- Worktree 分支命名遵循项目已有风格：`fix/<英文描述>` 或 `feat/<英文描述>`（如 `fix/copy-hover`），不使用 `claude/xxx` 随机名
 - 前后端字段必须一致——Rust `Settings` 结构体新增字段时，JS `save()` 对象必须同步
 - `tauri.conf.json` 中 `plugins` 字段不能有子配置对象（store、global-shortcut 只接受 null）
 - 百度 API 凭据绝不写入源码，只能通过设置 UI 录入
