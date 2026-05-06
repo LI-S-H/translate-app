@@ -37,7 +37,7 @@ Windows 桌面翻译工具，基于 Tauri v2 + 原生 HTML/CSS/JS + 百度翻译
 **关键原则：**
 - "能用"不等于"修好了"——必须验证功能确实生效（打开设置、点保存、拖动窗口）
 - 思考过程（thinking）使用中文
-- Worktree 分支命名：`fix/<描述>` 或 `feat/<描述>`，不使用 `claude/xxx` 随机名
+- Worktree 分支命名遵循项目已有风格：`fix/<英文描述>` 或 `feat/<英文描述>`（如 `fix/copy-hover`），不使用 `claude/xxx` 随机名
 - 前后端字段必须一致——Rust `Settings` 结构体新增字段时，JS `save()` 对象必须同步
 - `tauri.conf.json` 中 `plugins` 字段不能有子配置对象（store、global-shortcut 只接受 null）
 - 百度 API 凭据绝不写入源码，只能通过设置 UI 录入
