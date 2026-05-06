@@ -19,14 +19,6 @@ const LANG_OPTIONS = [
   { value: "vi", label: "Tiếng Việt" },
 ];
 
-// Simple shortcut validation: must contain a modifier + key
-const SHORTCUT_RE = /^(Ctrl|Alt|Shift|Super)(\+(Ctrl|Alt|Shift|Super))*\+[A-Z0-9]$/i;
-
-function validateShortcut(val) {
-  if (!val) return true; // will use default
-  return SHORTCUT_RE.test(val);
-}
-
 export function createSettings(onSettingsChanged) {
   const overlay = document.getElementById("settings-overlay");
   const btnSettings = document.getElementById("btn-settings");
@@ -91,6 +83,8 @@ export function createSettings(onSettingsChanged) {
       targetDropdown = createDropdown(selectTarget, targetLangOptions);
 
       inputShortcut.value = settings.shortcut || "Ctrl+Shift+T";
+      inputShortcut.readOnly = true;
+      inputShortcut.placeholder = "点击后按下组合键...";
       inputAutostart.checked = settings.auto_start || false;
       inputMock.checked = settings.mock_mode !== false;
       inputBaiduAppId.value = settings.baidu_app_id || "";
@@ -105,12 +99,6 @@ export function createSettings(onSettingsChanged) {
   }
 
   async function save() {
-    // Validate shortcut
-    if (!validateShortcut(inputShortcut.value)) {
-      showMsg("快捷键格式错误，请使用类似 Ctrl+Shift+T 的格式");
-      return;
-    }
-
     showMsg("");
     try {
       const newSettings = {
@@ -140,6 +128,22 @@ export function createSettings(onSettingsChanged) {
       showMsg("保存失败: " + String(err));
     }
   }
+
+  // 快捷键按键捕获
+  inputShortcut.addEventListener("keydown", (e) => {
+    e.preventDefault();
+    const parts = [];
+    if (e.ctrlKey) parts.push("Ctrl");
+    if (e.altKey) parts.push("Alt");
+    if (e.shiftKey) parts.push("Shift");
+    if (e.metaKey) parts.push("Super");
+
+    const key = e.key;
+    if (["Control", "Alt", "Shift", "Meta"].includes(key)) return;
+
+    parts.push(key.length === 1 ? key.toUpperCase() : key);
+    inputShortcut.value = parts.join("+");
+  });
 
   btnSettings.addEventListener("click", open);
   btnSave.addEventListener("click", save);

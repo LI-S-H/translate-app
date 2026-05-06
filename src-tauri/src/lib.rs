@@ -2,17 +2,21 @@ mod autostart;
 mod translator;
 
 use std::sync::Mutex;
+use std::thread;
+use std::time::Duration;
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     Manager, State,
 };
+use tauri_plugin_global_shortcut::GlobalShortcutExt;
 use tauri_plugin_store::StoreExt;
 use translator::{translate, Settings, TranslationResult};
 
 /// In-memory settings cache, synced with persistent store
 struct AppState {
     settings: Mutex<Settings>,
+    pending_selection: Mutex<Option<String>>,
 }
 
 // ===== Tauri Commands =====
@@ -35,6 +39,15 @@ async fn translate_text(
 fn get_settings(state: State<'_, AppState>) -> Result<Settings, String> {
     let settings = state.settings.lock().map_err(|e| format!("锁定设置失败: {}", e))?;
     Ok(settings.clone())
+}
+
+#[tauri::command]
+fn get_pending_selection(state: State<'_, AppState>) -> Result<Option<String>, String> {
+    let mut pending = state
+        .pending_selection
+        .lock()
+        .map_err(|e| format!("锁定失败: {}", e))?;
+    Ok(pending.take())
 }
 
 #[tauri::command]
@@ -80,6 +93,11 @@ fn save_settings(
         let _ = autostart::set_autostart(false);
     }
 
+    // Apply shortcut — unregister old, register new
+    let gs = app.global_shortcut();
+    let _ = gs.unregister_all();
+    let _ = gs.register(new_settings.shortcut.as_str());
+
     Ok(())
 }
 
@@ -101,22 +119,51 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
-                .with_shortcuts(["Ctrl+Shift+T"])
-                .unwrap()
-                .with_handler(|app, shortcut, event| {
-                    if event.state == tauri_plugin_global_shortcut::ShortcutState::Pressed {
-                        if shortcut.matches(
-                            tauri_plugin_global_shortcut::Modifiers::CONTROL
-                                | tauri_plugin_global_shortcut::Modifiers::SHIFT,
-                            tauri_plugin_global_shortcut::Code::KeyT,
-                        ) {
+                .with_handler(|app, _shortcut, event| {
+                    if event.state
+                        == tauri_plugin_global_shortcut::ShortcutState::Pressed
+                    {
+                        // 保存原剪贴板内容
+                        let original = arboard::Clipboard::new()
+                            .ok()
+                            .and_then(|mut c| c.get_text().ok())
+                            .unwrap_or_default();
+
+                        // 模拟 Ctrl+C 复制选中文字
+                        if let Ok(mut enigo) =
+                            enigo::Enigo::new(&enigo::Settings::default())
+                        {
+                            use enigo::{Direction, Key, Keyboard};
+                            let _ = enigo.key(Key::Control, Direction::Press);
+                            let _ = enigo.key(Key::Unicode('c'), Direction::Click);
+                            let _ = enigo.key(Key::Control, Direction::Release);
+                        }
+
+                        // 等待剪贴板更新
+                        thread::sleep(Duration::from_millis(80));
+
+                        // 读取选中文字
+                        let selected = arboard::Clipboard::new()
+                            .ok()
+                            .and_then(|mut c| c.get_text().ok())
+                            .map(|s| s.trim().to_string())
+                            .filter(|s| !s.is_empty());
+
+                        // 恢复原剪贴板
+                        if let Ok(mut clipboard) = arboard::Clipboard::new() {
+                            let _ = clipboard.set_text(original);
+                        }
+
+                        // 存入状态并显示窗口
+                        if let Some(text) = selected {
+                            let state = app.state::<AppState>();
+                            if let Ok(mut pending) = state.pending_selection.lock()
+                            {
+                                *pending = Some(text);
+                            }
                             if let Some(win) = app.get_webview_window("main") {
-                                if win.is_visible().unwrap_or(false) {
-                                    let _ = win.hide();
-                                } else {
-                                    let _ = win.show();
-                                    let _ = win.set_focus();
-                                }
+                                let _ = win.show();
+                                let _ = win.set_focus();
                             }
                         }
                     }
@@ -125,6 +172,7 @@ pub fn run() {
         )
         .manage(AppState {
             settings: Mutex::new(Settings::default()),
+            pending_selection: Mutex::new(None),
         })
         .setup(|app| {
             // Build tray menu
@@ -221,6 +269,10 @@ pub fn run() {
                 settings.baidu_key = val.as_str().unwrap_or("").to_string();
             }
 
+            // 注册全局快捷键
+            let shortcut_str = settings.shortcut.clone();
+            let _ = app.global_shortcut().register(shortcut_str.as_str());
+
             Ok(())
         })
         .on_window_event(|window, event| {
@@ -236,6 +288,7 @@ pub fn run() {
             save_settings,
             get_autostart_status,
             exit_app,
+            get_pending_selection,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
