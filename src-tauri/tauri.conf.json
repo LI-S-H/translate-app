@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicedoc/tauri/refs/heads/dev/.schema/config.schema.json",
   "productName": "Translate",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "identifier": "com.lish.translate",
   "build": {
     "devUrl": "http://localhost:5173",
