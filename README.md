@@ -20,9 +20,19 @@
 
 ## 安装
 
-从 [Releases](https://github.com/LI-S-H/translate-app/releases) 下载最新 `Translate_0.3.0_x64_en-US.msi`，双击安装即可。
+1. 从 [Releases](https://github.com/LI-S-H/translate-app/releases) 下载最新 `Translate_0.3.0_x64_en-US.msi`
+2. 双击安装即可
 
 > 需要 Windows 10 或 Windows 11（自带 WebView2 运行时）。
+
+### Windows SmartScreen 提示
+
+因未购买代码签名证书（年费数千元），首次运行时可能被 SmartScreen 拦截：
+
+1. 点击「**更多信息**」
+2. 点击「**仍要运行**」
+
+或下载 `.zip` 版本，解压后直接运行 `translate-app.exe`。
 
 ## 使用
 
