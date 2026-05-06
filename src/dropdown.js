@@ -81,7 +81,14 @@ export function createDropdown(selectEl, options) {
     const isOpen = dropdown.classList.contains("open");
     // 关闭所有其他下拉
     document.querySelectorAll(".custom-select-dropdown.open").forEach((d) => d.classList.remove("open"));
-    if (!isOpen) dropdown.classList.add("open");
+    if (!isOpen) {
+      // 动态判断展开方向：下方空间不足时向上展开
+      const triggerRect = trigger.getBoundingClientRect();
+      const dropdownHeight = 220;
+      const spaceBelow = window.innerHeight - triggerRect.bottom;
+      dropdown.classList.toggle("open-up", spaceBelow < dropdownHeight && triggerRect.top > dropdownHeight);
+      dropdown.classList.add("open");
+    }
   }
 
   trigger.addEventListener("click", (e) => {
