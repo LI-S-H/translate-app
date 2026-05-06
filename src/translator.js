@@ -202,9 +202,16 @@ export function createTranslator(settings) {
 
   copyBtn.addEventListener("click", onCopyClick);
 
+  function fillAndTranslate(text) {
+    inputArea.value = text;
+    updateClearBtn();
+    doTranslate();
+  }
+
   return {
     translate: doTranslate,
     refresh: debouncedTranslate,
     updateSettings: (s) => { appSettings.current = s; },
+    fillAndTranslate,
   };
 }

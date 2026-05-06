@@ -152,4 +152,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // 8. Setup window controls
   setupWindowControls();
+
+  // 9. 划词翻译：窗口获得焦点时检查是否有待翻译的选中文字
+  window.addEventListener("focus", async () => {
+    try {
+      const text = await invoke("get_pending_selection");
+      if (text && text.trim()) {
+        translator.fillAndTranslate(text.trim());
+      }
+    } catch (_) {}
+  });
 });
